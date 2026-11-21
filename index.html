@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v4.6 Cloud)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.7 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -110,7 +110,7 @@
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.6 Cloud]</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.7 Cloud]</h1>
       <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
@@ -410,8 +410,8 @@
   async function checkOneMcServer(ipRaw) {
     const clean = ipRaw.trim();
     const parts = clean.split(':');
-    const host = parts[0];
-    const port = parts[1] || '25565';
+    const host = parts.at(0);
+    const port = parts.at(1) || '25565';
     const start = Date.now();
 
     try {
@@ -458,7 +458,7 @@
 
   async function checkServersPing() {
     for (let i = 0; i < serversCache.length; i++) {
-      const s = serversCache[i];
+      const s = serversCache.at(i);
       if (!s.ip || s.ip === 'Скоро запуск') {
         serversStatus[i] = { online: false };
         continue;
@@ -488,8 +488,9 @@
       const res = await fetch(SB_URL + '&select=payload', { headers: SB_HEADERS });
       const rows = await res.json();
       if (isSaving) return;
-      if (rows && rows.length > 0 && rows[0].payload) {
-        const d = rows[0].payload;
+      const firstRow = Array.isArray(rows) ? rows.at(0) : null;
+      if (firstRow && firstRow.payload) {
+        const d = firstRow.payload;
         if (d.topics && Object.keys(d.topics).length > 0) {
           topicsData = d.topics;
           if (d.keys) keysCache = d.keys;
@@ -690,7 +691,7 @@
   }
 
   function uploadAvatar(event) {
-    const file = event.target.files[0];
+    const file = event.target.files.item(0);
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
