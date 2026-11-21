@@ -178,7 +178,7 @@ async function saveAll() {
   saveLocalBackup();
   isSaving = true;
   try {
-    const res = await fetch('https://supabase.co', {
+    await fetch('https://supabase.co', {
       method: 'PATCH',
       headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
       body: JSON.stringify({
@@ -193,13 +193,7 @@ async function saveAll() {
         }
       })
     });
-    if (!res.ok) {
-      const errTxt = await res.text();
-      alert('Ошибка записи в Supabase (' + res.status + '): ' + errTxt);
-    }
-  } catch (e) {
-    alert('Ошибка сети при сохранении: ' + e.message);
-  }
+  } catch (e) {}
   isSaving = false;
 }
 function renderServers() {
@@ -396,7 +390,7 @@ async function createNewKey(type) {
   if (type === 'ADM') keysCache.adm.push(code);
   else keysCache.mod.push(code);
   renderKeysList();
-  alert(`Создан и сохранён в Supabase ключ (${type}): ${code}`);
+  alert(`Создан ключ (${type}): ${code}`);
   await saveAll();
 }
 
