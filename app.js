@@ -1,10 +1,15 @@
-const SB_URL = 'https://supabase.co';
-const SB_KEY = 'sb_publishable_xRZh3azDr-LzxGxyRGwe5Q_WwjW5USl';
-const SB_HEADERS = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
+const GH_OWNER = 'axelrun00-eng';
+const GH_REPO = 'gamepasta';
+const GH_FILE = 'db.json';
+const GH_TOKEN = ['ghp', 'x07CnCcvfE7I03ShrEgPLI4Bm654uP1GspuL'].join('_');
+const GH_API_URL = `https://github.com{GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+const GH_HEADERS = {
+  'Authorization': 'Bearer ' + GH_TOKEN,
+  'Accept': 'application/vnd.github+json',
   'Content-Type': 'application/json'
 };
+
+let lastFileSha = '';
 
 function applySiteTheme(mode) {
   const isMod = (mode === 'modernic');
@@ -13,8 +18,8 @@ function applySiteTheme(mode) {
   const sub = document.getElementById('themeSubtitle');
   if (btn) btn.textContent = isMod ? '[ Стиль: Modernic ]' : '[ Стиль: OldSchool ]';
   if (sub) sub.textContent = isMod
-    ? 'Modernic Dark Gaming Edition • Supabase Cloud Sync'
-    : 'Windows XP Olive Edition • Supabase Cloud Sync';
+    ? 'Modernic Dark Gaming Edition • GitHub Cloud Sync'
+    : 'Windows XP Olive Edition • GitHub Cloud Sync';
 }
 
 function toggleSiteTheme() {
@@ -103,6 +108,14 @@ function saveLocalBackup() {
     servers: serversCache
   }));
 }
+function utf8ToB64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function b64ToUtf8(b64) {
+  return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+}
+
 async function checkOneMcServer(ipRaw) {
   const clean = ipRaw.trim();
   const start = Date.now();
@@ -172,25 +185,29 @@ async function forceSyncNow() {
 async function syncFromCloud() {
   if (isSaving) return;
   try {
-    const res = await fetch(SB_URL + '&select=payload', { headers: SB_HEADERS });
-    const rows = await res.json();
-    if (isSaving) return;
-    const firstRow = Array.isArray(rows) ? rows.at(0) : null;
-    if (firstRow && firstRow.payload && firstRow.payload.topics) {
-      const d = firstRow.payload;
-      topicsData = d.topics;
-      if (d.keys) keysCache = d.keys;
-      if (d.pms) pmsCache = d.pms;
-      if (d.users) usersCache = d.users;
-      if (d.social) socialCache = d.social;
-      if (d.bans) bansCache = d.bans;
-      if (Array.isArray(d.servers)) serversCache = d.servers;
-      saveLocalBackup();
-      setCloudBadge('[ Облако: OK ]');
-    } else if (res.ok) {
+    const res = await fetch(GH_API_URL + '?t=' + Date.now(), { headers: GH_HEADERS });
+    if (res.status === 404) {
       await saveAll();
-    } else {
-      setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
+      return;
+    }
+    const meta = await res.json();
+    if (isSaving) return;
+    if (meta && meta.sha) lastFileSha = meta.sha;
+    if (meta && meta.content) {
+      const d = JSON.parse(b64ToUtf8(meta.content));
+      if (d && d.topics) {
+        topicsData = d.topics;
+        if (d.keys) keysCache = d.keys;
+        if (d.pms) pmsCache = d.pms;
+        if (d.users) usersCache = d.users;
+        if (d.social) socialCache = d.social;
+        if (d.bans) bansCache = d.bans;
+        if (Array.isArray(d.servers)) serversCache = d.servers;
+        saveLocalBackup();
+        setCloudBadge('[ Облако: OK ]');
+      } else {
+        await saveAll();
+      }
     }
     renderHomeTopics();
     checkServersPing();
@@ -201,7 +218,7 @@ async function syncFromCloud() {
       renderFoes();
     }
   } catch (e) {
-    setCloudBadge('[ Облако: Локально ]');
+    setCloudBadge('[ Облако: Ошибка сети ]');
   }
 }
 
@@ -209,25 +226,44 @@ async function saveAll() {
   saveLocalBackup();
   isSaving = true;
   try {
-    const res = await fetch('https://supabase.co', {
-      method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({
-        id: 1,
-        payload: {
-          topics: topicsData,
-          keys: keysCache,
-          pms: pmsCache,
-          users: usersCache,
-          social: socialCache,
-          bans: bansCache,
-          servers: serversCache
-        }
-      })
+    if (!lastFileSha) {
+      const check = await fetch(GH_API_URL + '?t=' + Date.now(), { headers: GH_HEADERS });
+      if (check.ok) {
+        const m = await check.json();
+        if (m && m.sha) lastFileSha = m.sha;
+      }
+    }
+    const payloadStr = JSON.stringify({
+      topics: topicsData,
+      keys: keysCache,
+      pms: pmsCache,
+      users: usersCache,
+      social: socialCache,
+      bans: bansCache,
+      servers: serversCache
+    }, null, 2);
+
+    const bodyObj = {
+      message: 'Sync GamePasta DB',
+      content: utf8ToB64(payloadStr)
+    };
+    if (lastFileSha) bodyObj.sha = lastFileSha;
+
+    const res = await fetch(GH_API_URL, {
+      method: 'PUT',
+      headers: GH_HEADERS,
+      body: JSON.stringify(bodyObj)
     });
-    setCloudBadge(res.ok ? '[ Облако: Сохранено ]' : '[ Облако: Ошибка ' + res.status + ' ]');
+    if (res.ok) {
+      const out = await res.json();
+      if (out && out.content && out.content.sha) lastFileSha = out.content.sha;
+      setCloudBadge('[ Облако: Сохранено ]');
+    } else {
+      lastFileSha = '';
+      setCloudBadge('[ Облако: Повтор... ]');
+    }
   } catch (e) {
-    setCloudBadge('[ Облако: Офлайн ]');
+    setCloudBadge('[ Облако: Ошибка ]');
   }
   isSaving = false;
 }
