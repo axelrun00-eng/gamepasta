@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>GamePasta.ru :: Игровой портал (Windows XP Olive Edition)</title>
+  <style>
+    body {
+      background-color: #162919;
+      background-image: linear-gradient(180deg, #1f3b23 0%, #101f12 100%);
+      color: #000000;
+      font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+      font-size: 11px;
+      margin: 0;
+      padding: 14px;
+    }
+    .wrapper {
+      max-width: 820px;
+      margin: 0 auto;
+      background-color: #ece9d8;
+      border: 3px ridge #ffffff;
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.7);
+      padding: 8px;
+    }
+    .header-bar {
+      background: linear-gradient(
+        180deg,
+        #b8cf8c 0%,
+        #8ba858 14%,
+        #6d8c3c 50%,
+        #59752d 51%,
+        #769642 100%
+      );
+      color: #ffffff;
+      padding: 10px 14px;
+      border: 2px outset #d8e8b8;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-bar h1 {
+      margin: 0;
+      font-size: 16px;
+      font-family: "Trebuchet MS", Tahoma, sans-serif;
+      color: #ffffff;
+      text-shadow: 1px 1px 2px #1d2b0d;
+    }
+    .header-bar p {
+      margin: 2px 0 0 0;
+      font-size: 10px;
+      color: #f4fae8;
+      text-shadow: 1px 1px 1px #243610;
+    }
+    .login-btn, .logout-btn, .btn-small {
+      background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f2f5eb 48%,
+        #d5dec4 52%,
+        #e5ecd8 100%
+      );
+      border: 1px solid #3c5222;
+      border-radius: 3px;
+      box-shadow: inset 0 1px 0 #ffffff;
+      padding: 4px 11px;
+      font-family: Tahoma, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      color: #1e2e0f;
+      cursor: pointer;
+    }
+    .login-btn:hover, .logout-btn:hover, .btn-small:hover {
+      border-color: #e68b2c;
+      box-shadow: inset 0 0 3px #f8b35c;
+    }
+    .user-panel {
+      display: none;
+      background: linear-gradient(180deg, #ffffe1 0%, #f5f2c2 100%);
+      border: 1px solid #8c8a46;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ava-mini {
+      width: 26px;
+      height: 26px;
+      border: 1px solid #59752d;
+      background: #ffffff;
+      vertical-align: middle;
+      margin-right: 6px;
+      object-fit: cover;
+    }
+    .ava-post {
+      width: 54px;
+      height: 54px;
+      border: 2px inset #ffffff;
+      background: #ffffff;
+      object-fit: cover;
+      display: block;
+    }
+    .ava-cab {
+      width: 68px;
+      height: 68px;
+      border: 2px inset #ffffff;
+      background: #ffffff;
+      object-fit: cover;
+    }
+    .del-btn {
+      background: linear-gradient(180deg, #ffecec 0%, #f5b8b8 100%);
+      border: 1px solid #992222;
+      border-radius: 2px;
+      color: #800000;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+    .nav-bar {
+      background: linear-gradient(180deg, #ffffff 0%, #dfe6d0 100%);
+      border: 1px solid #8fa372;
+      padding: 5px 8px;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+    .nav-bar a {
+      color: #2d5418;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .nav-bar a:hover { color: #d96b00; }
+    table.forum-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #59752d;
+      margin-bottom: 10px;
+      background-color: #ffffff;
+    }
+    table.forum-table th {
+      background: linear-gradient(
+        180deg,
+        #a8c27a 0%,
+        #7d9b4b 48%,
+        #668238 52%,
+        #799944 100%
+      );
+      color: #ffffff;
+      text-shadow: 1px 1px 1px #26360f;
+      text-align: left;
+      padding: 5px 8px;
+      font-size: 11px;
+      border: 1px solid #486122;
+    }
+    table.forum-table td {
+      padding: 7px 8px;
+      border: 1px solid #c2ccb0;
+      background: linear-gradient(180deg, #ffffff 0%, #f3f6ec 100%);
+      vertical-align: top;
+    }
+    tr.topic-row:hover td {
+      background: linear-gradient(180deg, #f7fae8 0%, #e1ebd0 100%);
+    }
+    .topic-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #274e13;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .topic-title:hover { color: #d96b00; }
+    .topic-desc { font-size: 10px; color: #47543c; margin-top: 2px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      border: 1px solid #5c6e46;
+      margin-top: 4px;
+    }
+    .badge-wait { background: #e3f0ff; color: #004085; }
+    .badge-ok { background: #dff2bf; color: #274e13; }
+    .post-box {
+      border: 1px solid #799452;
+      background-color: #fafcf5;
+      padding: 8px;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+    .post-header {
+      background: linear-gradient(180deg, #e7eed8 0%, #cdd9b6 100%);
+      padding: 4px 6px;
+      border-bottom: 1px solid #9ab078;
+      font-size: 11px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .post-body-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .term-tip {
+      position: relative;
+      display: inline-block;
+      color: #a8071a;
+      font-weight: bold;
+      border-bottom: 1px dotted #a8071a;
+      cursor: help;
+    }
+    .term-tip .tip-box {
+      visibility: hidden;
+      width: 220px;
+      background-color: #ffffe1;
+      color: #000000;
+      border: 1px solid #000000;
+      box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+      font-weight: normal;
+      font-size: 11px;
+      padding: 5px 7px;
+      position: absolute;
+      z-index: 50;
+      bottom: 125%;
+      left: 0;
+    }
+    .term-tip:hover .tip-box { visibility: visible; }
+    textarea, input[type="text"], input[type="email"], input[type="password"] {
+      border: 1px solid #7f9db9;
+      background-color: #ffffff;
+      font-family: Tahoma, sans-serif;
+      font-size: 11px;
+      padding: 3px 5px;
+    }
+    textarea { width: 96%; height: 65px; }
+    input:disabled { background-color: #dcdad0; color: #666666; }
+    .pm-grid { display: flex; gap: 8px; }
+    .pm-friends { width: 35%; border: 1px solid #8fa372; padding: 6px; background: #f2f5eb; }
+    .pm-chat { width: 65%; border: 1px solid #8fa372; padding: 6px; background: #f2f5eb; }
+    .friend-item {
+      padding: 4px 6px;
+      background: linear-gradient(180deg, #ffffff 0%, #dce4cc 100%);
+      border: 1px solid #799452;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .friend-active {
+      background: linear-gradient(180deg, #8ba858 0%, #59752d 100%);
+      color: #ffffff;
+      font-weight: bold;
+    }
+    .chat-log {
+      height: 140px;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 1px solid #7f9db9;
+      padding: 6px;
+      margin-bottom: 6px;
+    }
+    .keygen-box {
+      border: 1px solid #59752d;
+      background: linear-gradient(180deg, #eef5e1 0%, #dce8c8 100%);
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+    .key-tag {
+      display: inline-block;
+      background: #ffffff;
+      border: 1px dashed #59752d;
+      padding: 2px 6px;
+      margin: 3px 4px 3px 0;
+      font-family: monospace;
+      font-size: 11px;
+    }
+    .modal-bg {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 22, 12, 0.7);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-card {
+      background: #ece9d8;
+      border: 3px ridge #ffffff;
+      width: 92%;
+      max-width: 470px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .warn-label {
+      display: block;
+      padding: 5px;
+      background: #ffecec;
+      border: 1px solid #a8071a;
+      color: #800000;
+      margin: 6px 0;
+    }
+    .sub-panel {
+      display: none;
+      margin-top: 4px;
+      padding: 5px;
+      background: #e1e8d5;
+      border: 1px dashed #59752d;
+    }
+    .form-row { margin-bottom: 7px; }
+    .form-row input[type="text"],
+    .form-row input[type="email"],
+    .form-row input[type="password"] { width: 94%; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header-bar">
+    <div>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ</h1>
+      <p>Windows XP Olive Edition • Серверы CS:S и Minecraft</p>
+    </div>
+    <button class="login-btn" id="openLoginBtn" onclick="openModal()">
+      [ Вход / Регистрация ]
+    </button>
+  </div>
+
+  <div class="user-panel" id="savedUserPanel">
+    <div id="savedUserText" style="display:flex; align-items:center;"></div>
+    <div>
+      <button class="logout-btn" onclick="openCabinet()">Личный раздел</button>
+      <button class="logout-btn" onclick="logoutUser()">Выход</button>
+    </div>
+  </div>
+
+  <div class="nav-bar" id="breadcrumbs">
+    <a onclick="showHome()">Список форумов</a> &raquo; Главное меню
+  </div>
+
+  <div id="homeView">
+    <table class="forum-table">
+      <tr>
+        <th style="width: 78%;">Информация проекта</th>
+        <th style="width: 22%; text-align: center;">Сообщений</th>
+      </tr>
+      <tr class="topic-row">
+        <td>
+          <a class="topic-title" onclick="openTopic('news')">Новости</a>
+          <div class="topic-desc">Обновления серверов и события портала.</div>
+        </td>
+        <td style="text-align: center;" id="count-news">1</td>
+      </tr>
+      <tr class="topic-row">
+        <td>
+          <a class="topic-title" onclick="openTopic('rules')">Правила</a>
+          <div class="topic-desc">Устав сервера и регламент проверок.</div>
+        </td>
+        <td style="text-align: center;" id="count-rules">1</td>
+      </tr>
+    </table>
+
+    <table class="forum-table">
+      <tr>
+        <th style="width: 78%;">Темы</th>
+        <th style="width: 22%; text-align: center;">Сообщений</th>
+      </tr>
+      <tr class="topic-row">
+        <td>
+          <a class="topic-title" onclick="openTopic('players')">
+            Жалоба на обычных игроков
+          </a>
+          <div class="topic-desc">Читы, фрикиллы и реклама серверов.</div>
+        </td>
+        <td style="text-align: center;" id="count-players">1</td>
+      </tr>
+      <tr class="topic-row">
+        <td>
+          <a class="topic-title" onclick="openTopic('admins')">
+            Жалоба на админов
+          </a>
+          <div class="topic-desc">Нарушения регламента администраторами.</div>
+        </td>
+        <td style="text-align: center;" id="count-admins">1</td>
+      </tr>
+      <tr class="topic-row">
+        <td>
+          <a class="topic-title" onclick="openTopic('faq')">
+            Вопросы и ответы
+          </a>
+          <div class="topic-desc">Помощь новичкам и заявки на админку.</div>
+        </td>
+        <td style="text-align: center;" id="count-faq">1</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="cabinetView" style="display: none;">
+    <table class="forum-table">
+      <tr><th>Личный раздел • Аватарка, Друзья, ЛС и Ключи</th></tr>
+    </table>
+
+    <div class="post-box" style="display:flex; gap:12px; align-items:center;">
+      <img id="cabAvatarImg" class="ava-cab" src="" alt="Аватар">
+      <div style="flex:1;">
+        <div id="cabProfileInfo"></div>
+        <div id="avaUploadBlock" style="margin-top:6px;">
+          <b>Поставить свою аватарку:</b>
+          <input type="file" id="avaFileInput" accept="image/*"
+            onchange="uploadAvatar(event)" style="font-size:10px;">
+          <button class="logout-btn" onclick="resetAvatar()">Сбросить</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="keygenPanel" class="keygen-box" style="display: none;">
+      <b>Панель Главного Модератора :: Генератор ключей доступа</b><br>
+      <div style="margin: 6px 0;">
+        <button class="btn-small" onclick="createNewKey('ADM')">
+          + Создать ключ Админа
+        </button>
+        <button class="btn-small" onclick="createNewKey('MOD')">
+          + Создать ключ Модератора
+        </button>
+      </div>
+      <div style="font-size: 10px; color: #2d5418; margin-bottom: 4px;">
+        Активные ключи (нажми [X], чтобы аннулировать ключ):
+      </div>
+      <div id="keysListDisplay"></div>
+    </div>
+
+    <div id="cabSimpleBlocked" class="warn-label" style="display: none;">
+      <b>ОШИБКА ДОСТУПА:</b> Вы вошли через «Простой аккаунт» (по правилам
+      вы не можете ставить аватарку, писать админам, в ЛС и голосовать).
+    </div>
+
+    <div id="cabContent" class="pm-grid">
+      <div class="pm-friends">
+        <b>Список друзей:</b>
+        <div style="margin: 5px 0;">
+          <input type="text" id="newFriendInput" placeholder="Ник..."
+            style="width: 60%;">
+          <button class="logout-btn" onclick="addFriend()">+ Доб.</button>
+        </div>
+        <div id="friendsListBox"></div>
+      </div>
+
+      <div class="pm-chat">
+        <b id="chatWithTitle">Выберите друга для ЛС</b>
+        <div class="chat-log" id="pmChatLog">
+          <span style="color:#555;">Выберите контакт слева.</span>
+        </div>
+        <div id="pmSendArea" style="display: none;">
+          <input type="text" id="pmInput" placeholder="Текст ЛС..."
+            style="width: 72%;">
+          <button class="btn-small" onclick="sendPM()">Отправить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="topicView" style="display: none;">
+    <table class="forum-table">
+      <tr><th id="topicHeaderTitle">Тема</th></tr>
+    </table>
+    <div id="postsContainer"></div>
+    <div class="post-box" id="replyBox">
+      <b>Быстрый ответ в тему:</b><br>
+      <textarea id="postText"></textarea><br>
+      <button class="btn-small" onclick="addPost()">Отправить пост</button>
+      <div id="simpleWarnText" style="color:#800000; display:none;">
+        Простой аккаунт не может писать админам, в ЛС и голосовать.
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; font-size:10px; color:#47543c; margin-top:8px;">
+    © 2005-2026 GamePasta.ru • Windows XP Olive Green Theme
+  </div>
+</div>
+
+<div class="modal-bg" id="loginModal">
+  <div class="modal-card">
+    <div style="background:linear-gradient(180deg, #a8c27a, #59752d);
+      color:#fff; padding:5px 7px; border:1px solid #3c5222;
+      display:flex; justify-content:space-between; font-weight:bold;">
+      <span>Авторизация / Регистрация</span>
+      <span style="cursor:pointer;" onclick="closeModal()">[X]</span>
+    </div>
+    <form id="authForm" style="margin-top: 8px;">
+      <label class="warn-label">
+        <input type="checkbox" id="simpleAccCheck" onchange="toggleSimple()">
+        <b>Выбрать простой аккаунт</b> (ВНИМАНИЕ: Вы не сможете писать
+        админам, в ЛС и голосовать)
+      </label>
+      <div class="form-row">
+        <b>Имя (Ник):</b><br>
+        <input type="text" id="username" required>
+      </div>
+      <div class="form-row">
+        <b>Почта:</b><br>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-row">
+        <b>Пароль:</b><br>
+        <input type="password" id="password" required>
+      </div>
+      <div class="form-row">
+        <b>Код администрации:</b><br>
+        <input type="text" id="adminCode" placeholder="Например: GP-ADM-2026-MOSCOW"
+          disabled><br>
+        <label>
+          <input type="checkbox" id="noCodeCheck" checked
+            onchange="toggleAdmin()"> Без кода
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          <input type="checkbox" id="modCheck" onchange="toggleMod()">
+          Использовать модераторские функции
+        </label>
+        <div class="sub-panel" id="modBox">
+          <input type="text" id="modCode" placeholder="Например: GP-MOD-9999-BOSS">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>
+          <input type="checkbox" id="linkCheck" onchange="toggleLink()">
+          Привязать аккаунт
+        </label>
+        <div class="sub-panel" id="linkBox">
+          <input type="password" id="oldPassword"
+            placeholder="Пароль прошлого акка">
+        </div>
+      </div>
+      <div class="form-row">
+        <label style="display:block;">
+          <input type="checkbox" id="autoLoginCheck" checked>
+          Автоматически входить в аккаунт
+        </label>
+        <label style="display:block;">
+          <input type="checkbox" id="hideStatusCheck">
+          Скрыть пребывание на форуме и статус в этот раз
+        </label>
+      </div>
+      <button type="submit" class="btn-small" style="width:100%;">
+        Войти на форум
+      </button>
+    </form>
+  </div>
+</div>
+<script>
+  const CLOUD_URL = 'https://npoint.io';
+  const DEFAULT_AVA =
+    'data:image/svg+xml;utf8,' +
+    '<svg xmlns="http://w3.org" width="64" height="64">' +
+    '<rect width="64" height="64" fill="%23dce4cc"/>' +
+    '<circle cx="32" cy="24" r="12" fill="%2359752d"/>' +
+    '<path d="M12,58 C12,42 52,42 52,58" fill="%2359752d"/></svg>';
+
+  let currentTopic = '';
+  let activeFriend = '';
+
+  let topicsData = {
+    news: {
+      title: 'Новости',
+      posts: [
+        {
+          owner: 'Основатель',
+          author: 'Основатель',
+          ava: '',
+          text: 'Добро пожаловать на GamePasta.ru! Подключены облачные ' +
+            'ЛС, аватарки и проверка зарегистрированных пользователей.',
+          status: ''
+        }
+      ]
+    },
+    rules: {
+      title: 'Правила',
+      posts: [
+        {
+          owner: 'Основатель',
+          author: 'Основатель',
+          ava: '',
+          text:
+            '<b>Раздел 1. Общие правила</b><br>' +
+            '<b>1.1.</b> Запрещено участвовать в мошеннических, ' +
+            'провоцирующих, экстремистских и эксплойтных схемах, ' +
+            'подменять голос для обмана и переманивать игроков. ' +
+            '<i>(ЧС проекта)</i>.<br>' +
+            '<b>1.2.</b> Запрещены любые читы и баги. ' +
+            '<i>(Бан навсегда)</i>.<br>' +
+            '<b>1.3.</b> Запрещены оскорбления и задевание родных.<br>' +
+            '<b>1.4.</b> Владелец сам отвечает за свой профиль.<br><br>' +
+            '<b>Раздел 2. Проверка на читы</b><br>' +
+            '<b>2.1.</b> Проверка проводится только при наличии ' +
+            '<b>хотя бы 1 мелкого доказательства</b>.<br>' +
+            '<b>2.2.</b> Места проверки: сайт <b>gamepasta.ru</b> в ЛС, ' +
+            '<b>ВК</b>, <b>Microsoft Teams</b>, <b>Telegram</b>, ' +
+            '<b>MAX</b>, <b>KakaoTalk</b>.<br>' +
+            '<b>2.3.</b> Выход с сервера, отказ или очистка файлов/флешки ' +
+            'перед созвоном = признание вины <i>(Бан навсегда)</i>.<br><br>' +
+            '<b>Раздел 3. Правила Администрации</b><br>' +
+            '<b>3.1.</b> Требования: возраст 14+, стаж в CS > полгода, ' +
+            'спокойный характер, грамотное написание.<br>' +
+            '<b>3.2.</b> Админу запрещается писать на почту, а также ' +
+            'выпрашивать пароли и адреса.<br>' +
+            '<b>3.3.</b> Запрещено банить без причины и отменять дуэли.<br>' +
+            '<b>3.3.1.</b> Админу запрещено использовать ' +
+            '<span class="term-tip">читы<span class="tip-box">' +
+            'Постороннее ПО, макросы, которое не было предусмотрено ' +
+            'Верхом Сервера</span></span> и ' +
+            '<span class="term-tip">крашеры<span class="tip-box">' +
+            'ПО для краша сервера</span></span>.<br>' +
+            '<b>3.4.</b> Статус «На проверке» (10 дней / подозрение / ' +
+            '2 из 3 предов): запрещено звать на проверку (кроме ЛС на ' +
+            'официальном сайте — только разговор и фото, без демки).<br><br>' +
+            '<b>Раздел 4. Режим Jailbreak («Тюрьма»)</b><br>' +
+            '<b>4.1.</b> Охрана обязана брать командира (!control).<br>' +
+            '<b>4.2.</b> Запрещены фрикиллы (за случайный — фридей).<br>' +
+            '<b>4.3.</b> Запрещено срывать !lr во время дуэлей.',
+          status: ''
+        }
+      ]
+    },
+    players: {
+      title: 'Жалоба на обычных игроков',
+      posts: [
+        {
+          owner: 'Lakar',
+          author: 'Lakar [Админ]',
+          ava: '',
+          text: 'Игрок Shadow_X забанен за ВХ.',
+          status: 'Одобрено'
+        }
+      ]
+    },
+    admins: {
+      title: 'Жалоба на админов',
+      posts: [
+        {
+          owner: 'Гражданин Москвы',
+          author: 'Гражданин Москвы',
+          ava: '',
+          text: 'Админ отменил ЛР при 2 игроках и забанил без причины.',
+          status: 'Жалоба рассматривается'
+        }
+      ]
+    },
+    faq: {
+      title: 'Вопросы и ответы',
+      posts: [
+        {
+          owner: 'Модератор',
+          author: 'Модератор',
+          ava: '',
+          text: 'Задавайте вопросы по работе форума здесь.',
+          status: ''
+        }
+      ]
+    }
+  };
+  let keysCache = {
+    adm: ['GP-ADM-2026-MOSCOW'],
+    mod: ['GP-MOD-9999-BOSS']
+  };
+  let pmsCache = {};
+  let usersCache = ['Lakar', 'Модератор', 'Основатель'];
+
+  function getRoomId(user1, user2) {
+    return [user1.toLowerCase(), user2.toLowerCase()].sort().join('__');
+  }
+
+  async function syncFromCloud() {
+    try {
+      const res = await fetch(CLOUD_URL);
+      const data = await res.json();
+      if (data && data.topics) {
+        topicsData = data.topics;
+        Object.keys(topicsData).forEach(k => {
+          const el = document.getElementById('count-' + k);
+          if (el) el.textContent = topicsData[k].posts.length;
+        });
+      }
+      if (data && data.keys) keysCache = data.keys;
+      if (data && data.pms) pmsCache = data.pms;
+      if (data && data.users) usersCache = data.users;
+      if (currentTopic) renderPosts();
+      if (activeFriend) renderChat();
+    } catch (e) {}
+  }
+
+  async function saveToCloud() {
+    try {
+      await fetch(CLOUD_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topics: topicsData,
+          keys: keysCache,
+          pms: pmsCache,
+          users: usersCache
+        })
+      });
+    } catch (e) {}
+  }
+
+  function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 64, 64);
+        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+        const u = getUser();
+        if (u) {
+          u.ava = compressed;
+          localStorage.setItem('gamepasta_user', JSON.stringify(u));
+          renderUser();
+          openCabinet();
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetAvatar() {
+    const u = getUser();
+    if (!u) return;
+    u.ava = '';
+    localStorage.setItem('gamepasta_user', JSON.stringify(u));
+    renderUser();
+    openCabinet();
+  }
+
+  function createNewKey(type) {
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const code = `GP-${type}-${num}-KEY`;
+    if (type === 'ADM') keysCache.adm.push(code);
+    else keysCache.mod.push(code);
+    saveToCloud();
+    renderKeysList();
+    alert(`Создан и сохранён в облаке ключ (${type}): ${code}`);
+  }
+
+  function deleteKey(type, idx) {
+    if (type === 'ADM') keysCache.adm.splice(idx, 1);
+    else keysCache.mod.splice(idx, 1);
+    saveToCloud();
+    renderKeysList();
+  }
+
+  function renderKeysList() {
+    const box = document.getElementById('keysListDisplay');
+    let html = '<div><b>Ключи Админов:</b> ';
+    keysCache.adm.forEach((k, i) => {
+      html += `<span class="key-tag">${k} ` +
+        `<b style="color:#a8071a; cursor:pointer;" ` +
+        `onclick="deleteKey('ADM', ${i})">[X]</b></span>`;
+    });
+    html += '</div><div style="margin-top:4px;"><b>Ключи Модераторов:</b> ';
+    keysCache.mod.forEach((k, i) => {
+      html += `<span class="key-tag">${k} ` +
+        `<b style="color:#a8071a; cursor:pointer;" ` +
+        `onclick="deleteKey('MOD', ${i})">[X]</b></span>`;
+    });
+    html += '</div>';
+    box.innerHTML = html;
+  }
+
+  function openModal() {
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+  function closeModal() {
+    document.getElementById('loginModal').style.display = 'none';
+  }
+
+  function toggleSimple() {
+    const s = document.getElementById('simpleAccCheck').checked;
+    document.getElementById('email').disabled = s;
+    document.getElementById('email').required = !s;
+    document.getElementById('password').disabled = s;
+    document.getElementById('password').required = !s;
+    document.getElementById('noCodeCheck').checked = true;
+    document.getElementById('noCodeCheck').disabled = s;
+    toggleAdmin();
+    document.getElementById('modCheck').checked = false;
+    document.getElementById('modCheck').disabled = s;
+    toggleMod();
+    document.getElementById('linkCheck').checked = false;
+    document.getElementById('linkCheck').disabled = s;
+    toggleLink();
+    document.getElementById('hideStatusCheck').checked = s;
+    document.getElementById('hideStatusCheck').disabled = s;
+  }
+
+  function toggleAdmin() {
+    const c = document.getElementById('noCodeCheck').checked;
+    document.getElementById('adminCode').disabled = c;
+  }
+  function toggleMod() {
+    const c = document.getElementById('modCheck').checked;
+    document.getElementById('modBox').style.display = c ? 'block' : 'none';
+  }
+  function toggleLink() {
+    const c = document.getElementById('linkCheck').checked;
+    document.getElementById('linkBox').style.display = c ? 'block' : 'none';
+  }
+
+  function getUser() {
+    const r = localStorage.getItem('gamepasta_user');
+    return r ? JSON.parse(r) : null;
+  }
+
+  function renderUser() {
+    const u = getUser();
+    const p = document.getElementById('savedUserPanel');
+    const b = document.getElementById('openLoginBtn');
+    if (u) {
+      const st = u.hideStatus ? ' [Невидимка]' : ' [Онлайн]';
+      const avaSrc = u.ava || DEFAULT_AVA;
+      document.getElementById('savedUserText').innerHTML =
+        `<img src="${avaSrc}" class="ava-mini">` +
+        `<span>Ник: <b>${u.name}</b> • Группа: <b>${u.role}</b>${st}</span>`;
+      p.style.display = 'flex';
+      b.textContent = '[ Сменить ник ]';
+    } else {
+      p.style.display = 'none';
+      b.textContent = '[ Вход / Регистрация ]';
+    }
+  }
+
+  function logoutUser() {
+    localStorage.removeItem('gamepasta_user');
+    renderUser();
+    showHome();
+  }
+
+  document.getElementById('authForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('username').value.trim();
+    const isSimple = document.getElementById('simpleAccCheck').checked;
+    const noCode = document.getElementById('noCodeCheck').checked;
+    const admVal = document.getElementById('adminCode').value.trim();
+    const isModCheck = document.getElementById('modCheck').checked;
+    const modVal = document.getElementById('modCode').value.trim();
+    const hideStatus = document.getElementById('hideStatusCheck').checked;
+
+    let isAdm = false;
+    let isMod = false;
+
+    if (!isSimple && !noCode) {
+      if (!keysCache.adm.includes(admVal)) {
+        alert('ОШИБКА: Неверный код администрации!');
+        return;
+      }
+      isAdm = true;
+    }
+
+    if (!isSimple && isModCheck) {
+      if (!keysCache.mod.includes(modVal)) {
+        alert('ОШИБКА: Неверный код модератора!');
+        return;
+      }
+      isMod = true;
+    }
+
+    let role = 'Обычный игрок';
+    if (isSimple) role = 'Простой аккаунт';
+    else if (isAdm && isMod) role = 'Главный Админ-Модератор';
+    else if (isMod) role = 'Админ-модератор';
+    else if (isAdm) role = 'Админ-игрок [На проверке]';
+
+    const oldUser = getUser();
+    const ava = (oldUser && oldUser.name === name && !isSimple) ? (oldUser.ava || '') : '';
+    const data = JSON.stringify({ name, role, isSimple, isMod, hideStatus, ava });
+    localStorage.setItem('gamepasta_user', data);
+
+    if (!isSimple) {
+      const exists = usersCache.some(u => u.toLowerCase() === name.toLowerCase());
+      if (!exists) {
+        usersCache.push(name);
+        await saveToCloud();
+      }
+    }
+
+    renderUser();
+    closeModal();
+    if (currentTopic) openTopic(currentTopic);
+  });
+  function showHome() {
+    currentTopic = '';
+    activeFriend = '';
+    document.getElementById('homeView').style.display = 'block';
+    document.getElementById('topicView').style.display = 'none';
+    document.getElementById('cabinetView').style.display = 'none';
+    document.getElementById('breadcrumbs').innerHTML =
+      '<a onclick="showHome()">Список форумов</a> &raquo; Главное меню';
+    syncFromCloud();
+  }
+
+  function getFriends() {
+    const f = localStorage.getItem('gamepasta_friends');
+    return f ? JSON.parse(f) : ['Lakar', 'Модератор'];
+  }
+  function saveFriends(arr) {
+    localStorage.setItem('gamepasta_friends', JSON.stringify(arr));
+  }
+
+  function openCabinet() {
+    const u = getUser();
+    if (!u) { openModal(); return; }
+    currentTopic = '';
+    document.getElementById('homeView').style.display = 'none';
+    document.getElementById('topicView').style.display = 'none';
+    document.getElementById('cabinetView').style.display = 'block';
+    document.getElementById('breadcrumbs').innerHTML =
+      '<a onclick="showHome()">Список форумов</a> &raquo; Личный раздел';
+
+    document.getElementById('cabAvatarImg').src = u.ava || DEFAULT_AVA;
+    const st = u.hideStatus ? 'Скрыт (Невидимка)' : 'Виден всем (Онлайн)';
+    document.getElementById('cabProfileInfo').innerHTML =
+      `<b>Профиль игрока:</b> ${u.name}<br>` +
+      `<b>Группа доступа:</b> ${u.role}<br>` +
+      `<b>Статус видимости:</b> ${st}`;
+
+    if (u.isMod) {
+      document.getElementById('keygenPanel').style.display = 'block';
+      renderKeysList();
+    } else {
+      document.getElementById('keygenPanel').style.display = 'none';
+    }
+
+    if (u.isSimple) {
+      document.getElementById('avaUploadBlock').style.display = 'none';
+      document.getElementById('cabSimpleBlocked').style.display = 'block';
+      document.getElementById('cabContent').style.display = 'none';
+    } else {
+      document.getElementById('avaUploadBlock').style.display = 'block';
+      document.getElementById('cabSimpleBlocked').style.display = 'none';
+      document.getElementById('cabContent').style.display = 'flex';
+      renderFriends();
+    }
+    syncFromCloud();
+  }
+
+  function renderFriends() {
+    const list = getFriends();
+    const box = document.getElementById('friendsListBox');
+    box.innerHTML = '';
+    list.forEach((f, idx) => {
+      const cls = (f === activeFriend)
+        ? 'friend-item friend-active' : 'friend-item';
+      box.innerHTML +=
+        `<div class="${cls}" onclick="selectFriend('${f}')">` +
+        `<span>${f}</span>` +
+        `<span onclick="event.stopPropagation(); delFriend(${idx})" ` +
+        `style="color:#800000; font-weight:bold;">[X]</span></div>`;
+    });
+  }
+
+  function showFriendStatus(msg, isErr) {
+    const box = document.getElementById('friendsListBox');
+    let note = document.getElementById('friendSearchNote');
+    if (!note) {
+      note = document.createElement('div');
+      note.id = 'friendSearchNote';
+      note.style.fontSize = '10px';
+      note.style.fontWeight = 'bold';
+      note.style.marginBottom = '5px';
+      box.parentNode.insertBefore(note, box);
+    }
+    note.style.color = isErr ? '#a8071a' : '#274e13';
+    note.textContent = msg;
+    setTimeout(() => { if (note) note.textContent = ''; }, 3000);
+  }
+
+  async function addFriend() {
+    const inp = document.getElementById('newFriendInput');
+    const rawName = inp.value.trim();
+    if (!rawName) return;
+
+    await syncFromCloud();
+    const me = getUser();
+    if (me && me.name.toLowerCase() === rawName.toLowerCase()) {
+      showFriendStatus('Нельзя добавить самого себя', true);
+      return;
+    }
+
+    const foundUser = usersCache.find(
+      u => u.toLowerCase() === rawName.toLowerCase()
+    );
+
+    if (!foundUser) {
+      showFriendStatus('Не найдено', true);
+      return;
+    }
+
+    const list = getFriends();
+    if (!list.includes(foundUser)) {
+      list.push(foundUser);
+      saveFriends(list);
+      showFriendStatus(`Добавлен: ${foundUser}`, false);
+    }
+    inp.value = '';
+    renderFriends();
+  }
+
+  function delFriend(idx) {
+    const list = getFriends();
+    if (list[idx] === activeFriend) {
+      activeFriend = '';
+      document.getElementById('pmSendArea').style.display = 'none';
+      document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
+    }
+    list.splice(idx, 1);
+    saveFriends(list);
+    renderFriends();
+  }
+
+  function selectFriend(name) {
+    activeFriend = name;
+    document.getElementById('chatWithTitle').textContent = `Облачные ЛС с: ${name}`;
+    document.getElementById('pmSendArea').style.display = 'block';
+    renderFriends();
+    syncFromCloud();
+  }
+
+  function renderChat() {
+    const u = getUser();
+    if (!u || !activeFriend) return;
+    const room = getRoomId(u.name, activeFriend);
+    const msgs = pmsCache[room] || [];
+    const log = document.getElementById('pmChatLog');
+    log.innerHTML = msgs.length
+      ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('')
+      : '<span style="color:#555;">Облачный чат пуст. Напишите первым!</span>';
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function sendPM() {
+    const u = getUser();
+    const inp = document.getElementById('pmInput');
+    const txt = inp.value.trim();
+    if (!txt || !activeFriend || !u) return;
+    const room = getRoomId(u.name, activeFriend);
+    if (!pmsCache[room]) pmsCache[room] = [];
+    pmsCache[room].push(`<b>${u.name}:</b> ${txt}`);
+    inp.value = '';
+    renderChat();
+    await saveToCloud();
+  }
+
+  function openTopic(id) {
+    currentTopic = id;
+    activeFriend = '';
+    const t = topicsData[id];
+    const u = getUser();
+    document.getElementById('homeView').style.display = 'none';
+    document.getElementById('cabinetView').style.display = 'none';
+    document.getElementById('topicView').style.display = 'block';
+    document.getElementById('topicHeaderTitle').textContent = t.title;
+    document.getElementById('breadcrumbs').innerHTML =
+      `<a onclick="showHome()">Список форумов</a> &raquo; ${t.title}`;
+
+    const warn = document.getElementById('simpleWarnText');
+    const area = document.getElementById('postText');
+    const box = document.getElementById('replyBox');
+
+    if ((id === 'news' || id === 'rules') && (!u || !u.isMod)) {
+      box.style.display = 'none';
+    } else {
+      box.style.display = 'block';
+      if (u && u.isSimple && id === 'admins') {
+        warn.style.display = 'block';
+        area.disabled = true;
+      } else {
+        warn.style.display = 'none';
+        area.disabled = false;
+      }
+    }
+    renderPosts();
+    syncFromCloud();
+  }
+
+  function renderPosts() {
+    const t = topicsData[currentTopic];
+    const u = getUser();
+    const c = document.getElementById('postsContainer');
+    c.innerHTML = '';
+
+    t.posts.forEach((p, idx) => {
+      let badge = '';
+      if (p.status === 'Жалоба рассматривается') {
+        badge = `<div class="badge badge-wait">${p.status}</div>`;
+      }
+      if (p.status === 'Одобрено') {
+        badge = `<div class="badge badge-ok">${p.status}</div>`;
+      }
+
+      let del = '';
+      if (u && (u.name === p.owner || u.isMod)) {
+        del = `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>`;
+      }
+
+      let mod = '';
+      if (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins')) {
+        mod =
+          `<div style="margin-top:6px;">` +
+          `<button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> ` +
+          `<button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`;
+      }
+
+      const postAva = p.ava || DEFAULT_AVA;
+      c.innerHTML +=
+        `<div class="post-box"><div class="post-header">` +
+        `<span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span>` +
+        `</div><div class="post-body-wrap">` +
+        `<img src="${postAva}" class="ava-post">` +
+        `<div style="flex:1;"><div>${p.text}</div>${badge}${mod}</div>` +
+        `</div></div>`;
+    });
+  }
+
+  function delPost(idx) {
+    topicsData[currentTopic].posts.splice(idx, 1);
+    const len = topicsData[currentTopic].posts.length;
+    document.getElementById('count-' + currentTopic).textContent = len;
+    renderPosts();
+    saveToCloud();
+  }
+
+  function setSt(idx, st) {
+    topicsData[currentTopic].posts[idx].status = st;
+    renderPosts();
+    saveToCloud();
+  }
+
+  function addPost() {
+    const u = getUser();
+    if (!u) { openModal(); return; }
+    if (u.isSimple && currentTopic === 'admins') return;
+    const text = document.getElementById('postText').value.trim();
+    if (!text) return;
+
+    const st = (currentTopic === 'players' || currentTopic === 'admins')
+      ? 'Жалоба рассматривается' : '';
+    topicsData[currentTopic].posts.push({
+      owner: u.name,
+      author: `${u.name} [${u.role}]`,
+      ava: u.ava || '',
+      text: text,
+      status: st
+    });
+    document.getElementById('postText').value = '';
+    const len = topicsData[currentTopic].posts.length;
+    document.getElementById('count-' + currentTopic).textContent = len;
+    renderPosts();
+    saveToCloud();
+  }
+
+  renderUser();
+  syncFromCloud();
+  setInterval(syncFromCloud, 4000);
+</script>
+</body>
+</html>
