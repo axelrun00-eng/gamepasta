@@ -6,6 +6,25 @@ const SB_HEADERS = {
   'Content-Type': 'application/json'
 };
 
+function applySiteTheme(mode) {
+  const isMod = (mode === 'modernic');
+  document.body.classList.toggle('modernic', isMod);
+  const btn = document.getElementById('themeToggleBtn');
+  const sub = document.getElementById('themeSubtitle');
+  if (btn) btn.textContent = isMod ? '[ Стиль: Modernic ]' : '[ Стиль: OldSchool ]';
+  if (sub) sub.textContent = isMod
+    ? 'Modernic Dark Gaming Edition • Supabase Cloud Sync'
+    : 'Windows XP Olive Edition • Supabase Cloud Sync';
+}
+
+function toggleSiteTheme() {
+  const next = document.body.classList.contains('modernic') ? 'oldschool' : 'modernic';
+  localStorage.setItem('gp_site_theme', next);
+  applySiteTheme(next);
+}
+
+applySiteTheme(localStorage.getItem('gp_site_theme') || 'oldschool');
+
 const DEFAULT_AVA =
   'data:image/svg+xml;utf8,' +
   '<svg xmlns="http://w3.org" width="64" height="64">' +
@@ -58,6 +77,7 @@ let socialCache = {};
 let bansCache = { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
 let serversCache = [];
 let serversStatus = {};
+
 const localBackup = localStorage.getItem('gp_cloud_backup_v4');
 if (localBackup) {
   try {
@@ -83,7 +103,6 @@ function saveLocalBackup() {
     servers: serversCache
   }));
 }
-
 async function checkOneMcServer(ipRaw) {
   const clean = ipRaw.trim();
   const start = Date.now();
@@ -111,7 +130,6 @@ async function checkOneMcServer(ipRaw) {
       };
     }
   }
-
   return { online: false };
 }
 
@@ -140,6 +158,17 @@ async function checkServersPing() {
   }
   renderServers();
 }
+
+function setCloudBadge(txt) {
+  const el = document.getElementById('cloudSyncBtn');
+  if (el) el.textContent = txt;
+}
+
+async function forceSyncNow() {
+  setCloudBadge('[ Облако: Отправка... ]');
+  await saveAll();
+}
+
 async function syncFromCloud() {
   if (isSaving) return;
   try {
@@ -157,8 +186,11 @@ async function syncFromCloud() {
       if (d.bans) bansCache = d.bans;
       if (Array.isArray(d.servers)) serversCache = d.servers;
       saveLocalBackup();
+      setCloudBadge('[ Облако: OK ]');
     } else if (res.ok) {
       await saveAll();
+    } else {
+      setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
     }
     renderHomeTopics();
     checkServersPing();
@@ -168,17 +200,20 @@ async function syncFromCloud() {
       renderFriends();
       renderFoes();
     }
-  } catch (e) {}
+  } catch (e) {
+    setCloudBadge('[ Облако: Локально ]');
+  }
 }
 
 async function saveAll() {
   saveLocalBackup();
   isSaving = true;
   try {
-    await fetch('https://supabase.co', {
-      method: 'PATCH',
-      headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    const res = await fetch('https://supabase.co', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify({
+        id: 1,
         payload: {
           topics: topicsData,
           keys: keysCache,
@@ -190,7 +225,10 @@ async function saveAll() {
         }
       })
     });
-  } catch (e) {}
+    setCloudBadge(res.ok ? '[ Облако: Сохранено ]' : '[ Облако: Ошибка ' + res.status + ' ]');
+  } catch (e) {
+    setCloudBadge('[ Облако: Офлайн ]');
+  }
   isSaving = false;
 }
 function renderServers() {
@@ -204,7 +242,7 @@ function renderServers() {
     tbody.innerHTML =
       `<tr><td><b>Серверы не добавлены</b></td><td>—</td>` +
       `<td style="text-align:center;">0/0</td>` +
-      `<td style="text-align:center; color:#a8071a; font-weight:bold;">No running</td></tr>`;
+      `<td style="text-align:center; color:#ef4444; font-weight:bold;">No running</td></tr>`;
     return;
   }
 
@@ -212,8 +250,8 @@ function renderServers() {
     const st = serversStatus[idx];
     const isUp = st && st.online;
     const pingText = isUp
-      ? `<span style="color:#274e13; font-weight:bold;">Online (${st.ms} ms)</span>`
-      : `<span style="color:#a8071a; font-weight:bold;">No running</span>`;
+      ? `<span style="color:#22c55e; font-weight:bold;">Online (${st.ms} ms)</span>`
+      : `<span style="color:#ef4444; font-weight:bold;">No running</span>`;
     const players = isUp ? `${st.now}/${st.max || s.max}` : `0/${s.max}`;
     const delBtn = (u && u.isMod) ? `<button class="del-btn" onclick="deleteServer(${idx})">[X]</button>` : '';
     return `<tr class="topic-row"><td><b>${s.name}</b></td>` +
@@ -318,15 +356,16 @@ async function deleteCustomTopic(key) {
   renderHomeTopics();
   await saveAll();
 }
+
 function renderBans() {
   const idBox = document.getElementById('bannedIdsList');
   const ipBox = document.getElementById('bannedIpsList');
   idBox.innerHTML = bansCache.ids.map((item, i) =>
-    `<span class="key-tag">${item} <b style="color:#800000; cursor:pointer;" onclick="removeBan('id', ${i})">[X]</b></span>`
+    `<span class="key-tag">${item} <b style="color:#ef4444; cursor:pointer;" onclick="removeBan('id', ${i})">[X]</b></span>`
   ).join('') || '<span style="color:#666;">Нет банов</span>';
 
   ipBox.innerHTML = bansCache.ips.map((item, i) =>
-    `<span class="key-tag">${item} <b style="color:#800000; cursor:pointer;" onclick="removeBan('ip', ${i})">[X]</b></span>`
+    `<span class="key-tag">${item} <b style="color:#ef4444; cursor:pointer;" onclick="removeBan('ip', ${i})">[X]</b></span>`
   ).join('') || '<span style="color:#666;">Нет банов</span>';
 }
 
@@ -347,7 +386,6 @@ async function removeBan(type, idx) {
   renderBans();
   await saveAll();
 }
-
 function uploadAvatar(event) {
   const file = event.target.files.item(0);
   if (!file) return;
@@ -402,14 +440,15 @@ function renderKeysList() {
   const box = document.getElementById('keysListDisplay');
   let html = '<div><b>Админ:</b> ';
   keysCache.adm.forEach((k, i) => {
-    html += `<span class="key-tag">${k} <b style="color:#a8071a; cursor:pointer;" onclick="deleteKey('ADM', ${i})">[X]</b></span>`;
+    html += `<span class="key-tag">${k} <b style="color:#ef4444; cursor:pointer;" onclick="deleteKey('ADM', ${i})">[X]</b></span>`;
   });
   html += '</div><div style="margin-top:4px;"><b>Модер:</b> ';
   keysCache.mod.forEach((k, i) => {
-    html += `<span class="key-tag">${k} <b style="color:#a8071a; cursor:pointer;" onclick="deleteKey('MOD', ${i})">[X]</b></span>`;
+    html += `<span class="key-tag">${k} <b style="color:#ef4444; cursor:pointer;" onclick="deleteKey('MOD', ${i})">[X]</b></span>`;
   });
   box.innerHTML = html + '</div>';
 }
+
 function openModal() { document.getElementById('loginModal').style.display = 'flex'; }
 function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
 
@@ -586,7 +625,7 @@ function renderFriends() {
     const cls = (f === activeFriend) ? 'friend-item friend-active' : 'friend-item';
     box.innerHTML +=
       `<div class="${cls}" onclick="selectFriend('${f}')"><span>${f}</span>` +
-      `<span onclick="event.stopPropagation(); delFriend(${idx})" style="color:#800000; font-weight:bold;">[X]</span></div>`;
+      `<span onclick="event.stopPropagation(); delFriend(${idx})" style="color:#ef4444; font-weight:bold;">[X]</span></div>`;
   });
 }
 
@@ -597,14 +636,14 @@ function renderFoes() {
   getFoes().forEach((f, idx) => {
     box.innerHTML +=
       `<div class="foe-item"><span>${f}</span>` +
-      `<span onclick="delFoe(${idx})" style="color:#800000; font-weight:bold; cursor:pointer;">[X]</span></div>`;
+      `<span onclick="delFoe(${idx})" style="color:#ef4444; font-weight:bold; cursor:pointer;">[X]</span></div>`;
   });
 }
 
 function setStatusText(elId, msg, isErr) {
   const el = document.getElementById(elId);
   if (!el) return;
-  el.style.color = isErr ? '#a8071a' : '#274e13';
+  el.style.color = isErr ? '#ef4444' : '#22c55e';
   el.textContent = msg;
   setTimeout(() => { el.textContent = ''; }, 3000);
 }
@@ -682,7 +721,7 @@ function renderChat() {
   const log = document.getElementById('pmChatLog');
   log.innerHTML = msgs.length
     ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('')
-    : '<span style="color:#555;">Сообщений нет.</span>';
+    : '<span style="color:#777;">Сообщений нет.</span>';
   log.scrollTop = log.scrollHeight;
 }
 
@@ -745,7 +784,7 @@ function renderPosts() {
     if (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins')) {
       mod = `<div style="margin-top:6px;"><button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> <button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`;
     }
-    const bioLine = p.bio ? `<div style="font-size:10px; color:#555; margin-top:4px; border-top:1px dotted #ccc; padding-top:2px;"><i>${p.bio}</i></div>` : '';
+    const bioLine = p.bio ? `<div style="font-size:10px; color:#888; margin-top:4px; border-top:1px dotted #444; padding-top:2px;"><i>${p.bio}</i></div>` : '';
     c.innerHTML +=
       `<div class="post-box"><div class="post-header">` +
       `<span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span>` +
