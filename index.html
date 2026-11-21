@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал</title>
+  <title>GamePasta.ru :: Игровой портал (v3.0)</title>
   <style>
     body {
       background-color: #162919;
@@ -23,12 +23,7 @@
     }
     .header-bar {
       background: linear-gradient(
-        180deg,
-        #b8cf8c 0%,
-        #8ba858 14%,
-        #6d8c3c 50%,
-        #59752d 51%,
-        #769642 100%
+        180deg, #b8cf8c 0%, #8ba858 14%, #6d8c3c 50%, #59752d 51%, #769642 100%
       );
       color: #ffffff;
       padding: 10px 14px;
@@ -38,25 +33,10 @@
       justify-content: space-between;
       align-items: center;
     }
-    .header-bar h1 {
-      margin: 0;
-      font-size: 16px;
-      color: #ffffff;
-      text-shadow: 1px 1px 2px #1d2b0d;
-    }
-    .header-bar p {
-      margin: 2px 0 0 0;
-      font-size: 10px;
-      color: #f4fae8;
-    }
+    .header-bar h1 { margin: 0; font-size: 16px; text-shadow: 1px 1px 2px #1d2b0d; }
+    .header-bar p { margin: 2px 0 0 0; font-size: 10px; color: #f4fae8; }
     .login-btn, .logout-btn, .btn-small {
-      background: linear-gradient(
-        180deg,
-        #ffffff 0%,
-        #f2f5eb 48%,
-        #d5dec4 52%,
-        #e5ecd8 100%
-      );
+      background: linear-gradient(180deg, #fff 0%, #f2f5eb 48%, #d5dec4 52%, #e5ecd8 100%);
       border: 1px solid #3c5222;
       border-radius: 3px;
       padding: 4px 10px;
@@ -66,9 +46,7 @@
       color: #1e2e0f;
       cursor: pointer;
     }
-    .login-btn:hover, .logout-btn:hover, .btn-small:hover {
-      border-color: #e68b2c;
-    }
+    .login-btn:hover, .logout-btn:hover, .btn-small:hover { border-color: #e68b2c; }
     .user-panel {
       display: none;
       background: linear-gradient(180deg, #ffffe1 0%, #f5f2c2 100%);
@@ -78,25 +56,9 @@
       justify-content: space-between;
       align-items: center;
     }
-    .ava-mini {
-      width: 26px;
-      height: 26px;
-      border: 1px solid #59752d;
-      margin-right: 6px;
-      object-fit: cover;
-    }
-    .ava-post {
-      width: 54px;
-      height: 54px;
-      border: 2px inset #ffffff;
-      object-fit: cover;
-    }
-    .ava-cab {
-      width: 68px;
-      height: 68px;
-      border: 2px inset #ffffff;
-      object-fit: cover;
-    }
+    .ava-mini { width: 26px; height: 26px; border: 1px solid #59752d; margin-right: 6px; object-fit: cover; }
+    .ava-post { width: 54px; height: 54px; border: 2px inset #fff; object-fit: cover; }
+    .ava-cab { width: 68px; height: 68px; border: 2px inset #fff; object-fit: cover; }
     .del-btn {
       background: #ffecec;
       border: 1px solid #992222;
@@ -107,190 +69,51 @@
       cursor: pointer;
       margin-left: 6px;
     }
-    .nav-bar {
-      background: #dfe6d0;
-      border: 1px solid #8fa372;
-      padding: 5px 8px;
-      margin-bottom: 8px;
-    }
+    .nav-bar { background: #dfe6d0; border: 1px solid #8fa372; padding: 5px 8px; margin-bottom: 8px; }
     .nav-bar a { color: #2d5418; font-weight: bold; cursor: pointer; }
-    table.forum-table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid #59752d;
-      margin-bottom: 10px;
-      background: #ffffff;
-    }
-    table.forum-table th {
-      background: linear-gradient(180deg, #a8c27a 0%, #668238 100%);
-      color: #ffffff;
-      text-align: left;
-      padding: 5px 8px;
-      border: 1px solid #486122;
-    }
-    table.forum-table td {
-      padding: 7px 8px;
-      border: 1px solid #c2ccb0;
-      background: #f3f6ec;
-    }
-    .topic-title {
-      font-size: 12px;
-      font-weight: bold;
-      color: #274e13;
-      text-decoration: underline;
-      cursor: pointer;
-    }
+    table.forum-table { width: 100%; border-collapse: collapse; border: 1px solid #59752d; margin-bottom: 10px; background: #fff; }
+    table.forum-table th { background: linear-gradient(180deg, #a8c27a 0%, #668238 100%); color: #fff; text-align: left; padding: 5px 8px; border: 1px solid #486122; }
+    table.forum-table td { padding: 7px 8px; border: 1px solid #c2ccb0; background: #f3f6ec; }
+    .topic-title { font-size: 12px; font-weight: bold; color: #274e13; text-decoration: underline; cursor: pointer; }
     .topic-desc { font-size: 10px; color: #47543c; margin-top: 2px; }
-    .badge {
-      display: inline-block;
-      padding: 2px 6px;
-      font-size: 10px;
-      font-weight: bold;
-      border: 1px solid #5c6e46;
-      margin-top: 4px;
-    }
+    .badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: bold; border: 1px solid #5c6e46; margin-top: 4px; }
     .badge-wait { background: #e3f0ff; color: #004085; }
     .badge-ok { background: #dff2bf; color: #274e13; }
-    .post-box {
-      border: 1px solid #799452;
-      background: #fafcf5;
-      padding: 8px;
-      margin-bottom: 8px;
-      line-height: 1.45;
-    }
-    .post-header {
-      background: #cdd9b6;
-      padding: 4px 6px;
-      border-bottom: 1px solid #9ab078;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-    }
+    .post-box { border: 1px solid #799452; background: #fafcf5; padding: 8px; margin-bottom: 8px; line-height: 1.45; }
+    .post-header { background: #cdd9b6; padding: 4px 6px; border-bottom: 1px solid #9ab078; margin-bottom: 6px; display: flex; justify-content: space-between; }
     .post-body-wrap { display: flex; gap: 10px; }
-    .term-tip {
-      position: relative;
-      color: #a8071a;
-      font-weight: bold;
-      border-bottom: 1px dotted #a8071a;
-      cursor: help;
-    }
-    .term-tip .tip-box {
-      visibility: hidden;
-      width: 210px;
-      background: #ffffe1;
-      color: #000;
-      border: 1px solid #000;
-      font-weight: normal;
-      padding: 5px;
-      position: absolute;
-      z-index: 50;
-      bottom: 125%;
-      left: 0;
-    }
+    .term-tip { position: relative; color: #a8071a; font-weight: bold; border-bottom: 1px dotted #a8071a; cursor: help; }
+    .term-tip .tip-box { visibility: hidden; width: 210px; background: #ffffe1; color: #000; border: 1px solid #000; font-weight: normal; padding: 5px; position: absolute; z-index: 50; bottom: 125%; left: 0; }
     .term-tip:hover .tip-box { visibility: visible; }
-    textarea, input[type="text"], input[type="email"], input[type="password"] {
-      border: 1px solid #7f9db9;
-      padding: 3px 5px;
-      font-family: Tahoma, sans-serif;
-      font-size: 11px;
-    }
+    textarea, input[type="text"], input[type="email"], input[type="password"] { border: 1px solid #7f9db9; padding: 3px 5px; font-family: Tahoma, sans-serif; font-size: 11px; }
     textarea { width: 96%; height: 60px; }
     input:disabled { background: #dcdad0; }
     .pm-grid { display: flex; gap: 8px; flex-wrap: wrap; }
     .pm-col { flex: 1; min-width: 190px; border: 1px solid #8fa372; padding: 6px; background: #f4f7ee; }
     .pm-chat { flex: 1.5; min-width: 240px; border: 1px solid #8fa372; padding: 6px; background: #f4f7ee; }
-    .friend-item {
-      padding: 4px 6px;
-      background: #dce4cc;
-      border: 1px solid #799452;
-      margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-    .foe-item {
-      padding: 4px 6px;
-      background: #f5d6d6;
-      border: 1px solid #a8071a;
-      margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-    }
+    .friend-item { padding: 4px 6px; background: #dce4cc; border: 1px solid #799452; margin-bottom: 4px; display: flex; justify-content: space-between; cursor: pointer; }
+    .foe-item { padding: 4px 6px; background: #f5d6d6; border: 1px solid #a8071a; margin-bottom: 4px; display: flex; justify-content: space-between; }
     .friend-active { background: #59752d; color: #fff; font-weight: bold; }
-    .chat-log {
-      height: 140px;
-      overflow-y: auto;
-      background: #fff;
-      border: 1px solid #7f9db9;
-      padding: 6px;
-      margin-bottom: 6px;
-    }
-    .admin-box {
-      border: 1px solid #59752d;
-      background: #dce8c8;
-      padding: 8px;
-      margin-bottom: 8px;
-    }
-    .ban-box {
-      border: 1px solid #992222;
-      background: #f9e6e6;
-      padding: 8px;
-      margin-bottom: 8px;
-    }
-    .key-tag {
-      display: inline-block;
-      background: #fff;
-      border: 1px dashed #59752d;
-      padding: 2px 6px;
-      margin: 2px;
-      font-family: monospace;
-    }
-    .modal-bg {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-card {
-      background: #ece9d8;
-      border: 3px ridge #fff;
-      width: 92%;
-      max-width: 460px;
-      padding: 10px;
-    }
-    .warn-label {
-      display: block;
-      padding: 5px;
-      background: #ffecec;
-      border: 1px solid #a8071a;
-      color: #800000;
-      margin: 6px 0;
-    }
-    .sub-panel {
-      display: none;
-      margin-top: 4px;
-      padding: 5px;
-      background: #e1e8d5;
-      border: 1px dashed #59752d;
-    }
+    .chat-log { height: 140px; overflow-y: auto; background: #fff; border: 1px solid #7f9db9; padding: 6px; margin-bottom: 6px; }
+    .admin-box { border: 1px solid #59752d; background: #dce8c8; padding: 8px; margin-bottom: 8px; }
+    .ban-box { border: 1px solid #992222; background: #f9e6e6; padding: 8px; margin-bottom: 8px; }
+    .key-tag { display: inline-block; background: #fff; border: 1px dashed #59752d; padding: 2px 6px; margin: 2px; font-family: monospace; }
+    .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+    .modal-card { background: #ece9d8; border: 3px ridge #fff; width: 92%; max-width: 460px; padding: 10px; }
+    .warn-label { display: block; padding: 5px; background: #ffecec; border: 1px solid #a8071a; color: #800000; margin: 6px 0; }
+    .sub-panel { display: none; margin-top: 4px; padding: 5px; background: #e1e8d5; border: 1px dashed #59752d; }
     .form-row { margin-bottom: 7px; }
-    .form-row input[type="text"],
-    .form-row input[type="email"],
-    .form-row input[type="password"] { width: 94%; }
+    .form-row input[type="text"], .form-row input[type="email"], .form-row input[type="password"] { width: 94%; }
   </style>
 </head>
 <body>
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v3.0]</h1>
       <p>Windows XP Olive Edition • Серверы CS:S и Minecraft</p>
     </div>
-    <button class="login-btn" id="openLoginBtn" onclick="openModal()">
-      [ Вход / Регистрация ]
-    </button>
+    <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
   </div>
 
   <div class="user-panel" id="savedUserPanel">
@@ -307,48 +130,29 @@
 
   <div id="homeView">
     <table class="forum-table">
-      <tr>
-        <th style="width: 78%;">Информация проекта</th>
-        <th style="width: 22%; text-align: center;">Сообщений</th>
-      </tr>
+      <tr><th style="width: 78%;">Информация проекта</th><th style="width: 22%; text-align: center;">Сообщений</th></tr>
       <tr class="topic-row">
-        <td>
-          <a class="topic-title" onclick="openTopic('news')">Новости</a>
-          <div class="topic-desc">Обновления серверов и события.</div>
-        </td>
+        <td><a class="topic-title" onclick="openTopic('news')">Новости</a><div class="topic-desc">Обновления серверов и события.</div></td>
         <td style="text-align: center;" id="count-news">1</td>
       </tr>
       <tr class="topic-row">
-        <td>
-          <a class="topic-title" onclick="openTopic('rules')">Правила</a>
-          <div class="topic-desc">Устав сервера и регламент проверок.</div>
-        </td>
+        <td><a class="topic-title" onclick="openTopic('rules')">Правила</a><div class="topic-desc">Устав сервера и регламент проверок.</div></td>
         <td style="text-align: center;" id="count-rules">1</td>
       </tr>
     </table>
 
-    <div id="modCreateTopicBar"
-      style="display:none; margin-bottom:6px; text-align:right;">
-      <button class="btn-small" onclick="openNewTopicModal()">
-        + Создать новую тему
-      </button>
+    <div id="modCreateTopicBar" style="display:none; margin-bottom:6px; text-align:right;">
+      <button class="btn-small" onclick="openNewTopicModal()">+ Создать новую тему</button>
     </div>
 
     <table class="forum-table">
-      <thead>
-        <tr>
-          <th style="width: 78%;">Темы</th>
-          <th style="width: 22%; text-align: center;">Сообщений</th>
-        </tr>
-      </thead>
+      <thead><tr><th style="width: 78%;">Темы</th><th style="width: 22%; text-align: center;">Сообщений</th></tr></thead>
       <tbody id="dynamicTopicsBody"></tbody>
     </table>
   </div>
 
   <div id="cabinetView" style="display: none;">
-    <table class="forum-table">
-      <tr><th>Личный раздел • Профиль, Друзья, Недруги, ЛС и Баны</th></tr>
-    </table>
+    <table class="forum-table"><tr><th>Личный раздел • Профиль, Друзья, Недруги, ЛС и Баны</th></tr></table>
 
     <div class="post-box" style="display:flex; gap:12px; align-items:flex-start;">
       <img id="cabAvatarImg" class="ava-cab" src="" alt="Аватар">
@@ -356,14 +160,12 @@
         <div id="cabProfileInfo"></div>
         <div id="avaUploadBlock" style="margin-top:6px;">
           <b>Аватарка:</b>
-          <input type="file" id="avaFileInput" accept="image/*"
-            onchange="uploadAvatar(event)" style="font-size:10px;">
+          <input type="file" id="avaFileInput" accept="image/*" onchange="uploadAvatar(event)" style="font-size:10px;">
           <button class="logout-btn" onclick="resetAvatar()">Сбросить</button>
         </div>
         <div id="bioBlock" style="margin-top:8px;">
           <b>Описание профиля (о себе):</b><br>
-          <textarea id="userBioInput" style="height:42px; margin-top:3px;"
-            placeholder="Напишите статус или информацию о себе..."></textarea><br>
+          <textarea id="userBioInput" style="height:42px; margin-top:3px;" placeholder="Напишите о себе..."></textarea><br>
           <button class="logout-btn" onclick="saveBio()">Сохранить описание</button>
           <span id="bioSavedNote" style="color:#274e13; font-weight:bold;"></span>
         </div>
@@ -374,7 +176,7 @@
       <b style="color:#800000;">Панель Админа/Модератора :: Заблокированные ID и IP</b>
       <div style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
-          <b>Заблокированные ID (SteamID / ID):</b>
+          <b>Заблокированные ID:</b>
           <div style="margin:4px 0;">
             <input type="text" id="banIdInput" placeholder="STEAM_0:1:12345" style="width:65%;">
             <button class="logout-btn" onclick="addBan('id')">Бан ID</button>
@@ -382,7 +184,7 @@
           <div id="bannedIdsList"></div>
         </div>
         <div style="flex:1; min-width:220px;">
-          <b>Заблокированные IP-адреса:</b>
+          <b>Заблокированные IP:</b>
           <div style="margin:4px 0;">
             <input type="text" id="banIpInput" placeholder="192.168.1.55" style="width:65%;">
             <button class="logout-btn" onclick="addBan('ip')">Бан IP</button>
@@ -437,9 +239,7 @@
     </div>
   </div>
   <div id="topicView" style="display: none;">
-    <table class="forum-table">
-      <tr><th id="topicHeaderTitle">Тема</th></tr>
-    </table>
+    <table class="forum-table"><tr><th id="topicHeaderTitle">Тема</th></tr></table>
     <div id="postsContainer"></div>
     <div class="post-box" id="replyBox">
       <b>Быстрый ответ:</b><br>
@@ -458,100 +258,54 @@
 
 <div class="modal-bg" id="newTopicModal">
   <div class="modal-card">
-    <div style="background:#59752d; color:#fff; padding:5px;
-      display:flex; justify-content:space-between; font-weight:bold;">
+    <div style="background:#59752d; color:#fff; padding:5px; display:flex; justify-content:space-between; font-weight:bold;">
       <span>Создание новой темы</span>
       <span style="cursor:pointer;" onclick="closeNewTopicModal()">[X]</span>
     </div>
     <form id="createTopicForm" style="margin-top:8px;">
-      <div class="form-row">
-        <b>Название темы:</b><br>
-        <input type="text" id="newTopicTitle" required>
-      </div>
-      <div class="form-row">
-        <b>Краткое описание:</b><br>
-        <input type="text" id="newTopicDesc" required>
-      </div>
-      <div class="form-row">
-        <b>Первое сообщение:</b><br>
-        <textarea id="newTopicFirstPost" required></textarea>
-      </div>
-      <button type="submit" class="btn-small" style="width:100%;">
-        Создать тему
-      </button>
+      <div class="form-row"><b>Название темы:</b><br><input type="text" id="newTopicTitle" required></div>
+      <div class="form-row"><b>Краткое описание:</b><br><input type="text" id="newTopicDesc" required></div>
+      <div class="form-row"><b>Первое сообщение:</b><br><textarea id="newTopicFirstPost" required></textarea></div>
+      <button type="submit" class="btn-small" style="width:100%;">Создать тему</button>
     </form>
   </div>
 </div>
 
 <div class="modal-bg" id="loginModal">
   <div class="modal-card">
-    <div style="background:#59752d; color:#fff; padding:5px;
-      display:flex; justify-content:space-between; font-weight:bold;">
+    <div style="background:#59752d; color:#fff; padding:5px; display:flex; justify-content:space-between; font-weight:bold;">
       <span>Авторизация / Регистрация</span>
       <span style="cursor:pointer;" onclick="closeModal()">[X]</span>
     </div>
     <form id="authForm" style="margin-top: 8px;">
       <label class="warn-label">
         <input type="checkbox" id="simpleAccCheck" onchange="toggleSimple()">
-        <b>Выбрать простой аккаунт</b> (ВНИМАНИЕ: Вы не сможете писать
-        админам, в ЛС и голосовать)
+        <b>Выбрать простой аккаунт</b> (ВНИМАНИЕ: Вы не сможете писать админам, в ЛС и голосовать)
       </label>
+      <div class="form-row"><b>Имя (Ник):</b><br><input type="text" id="username" required></div>
+      <div class="form-row"><b>Почта:</b><br><input type="email" id="email" required></div>
+      <div class="form-row"><b>Пароль:</b><br><input type="password" id="password" required></div>
       <div class="form-row">
-        <b>Имя (Ник):</b><br>
-        <input type="text" id="username" required>
+        <b>Код администрации:</b><br><input type="text" id="adminCode" disabled><br>
+        <label><input type="checkbox" id="noCodeCheck" checked onchange="toggleAdmin()"> Без кода</label>
       </div>
       <div class="form-row">
-        <b>Почта:</b><br>
-        <input type="email" id="email" required>
+        <label><input type="checkbox" id="modCheck" onchange="toggleMod()"> Использовать модераторские функции</label>
+        <div class="sub-panel" id="modBox"><input type="text" id="modCode" placeholder="Код модератора"></div>
       </div>
       <div class="form-row">
-        <b>Пароль:</b><br>
-        <input type="password" id="password" required>
+        <label><input type="checkbox" id="linkCheck" onchange="toggleLink()"> Привязать аккаунт</label>
+        <div class="sub-panel" id="linkBox"><input type="password" id="oldPassword" placeholder="Старый пароль"></div>
       </div>
       <div class="form-row">
-        <b>Код администрации:</b><br>
-        <input type="text" id="adminCode" disabled><br>
-        <label>
-          <input type="checkbox" id="noCodeCheck" checked
-            onchange="toggleAdmin()"> Без кода
-        </label>
+        <label style="display:block;"><input type="checkbox" id="autoLoginCheck" checked> Автоматически входить в аккаунт</label>
+        <label style="display:block;"><input type="checkbox" id="hideStatusCheck"> Скрыть пребывание на форуме и статус в этот раз</label>
       </div>
-      <div class="form-row">
-        <label>
-          <input type="checkbox" id="modCheck" onchange="toggleMod()">
-          Использовать модераторские функции
-        </label>
-        <div class="sub-panel" id="modBox">
-          <input type="text" id="modCode" placeholder="Код модератора">
-        </div>
-      </div>
-      <div class="form-row">
-        <label>
-          <input type="checkbox" id="linkCheck" onchange="toggleLink()">
-          Привязать аккаунт
-        </label>
-        <div class="sub-panel" id="linkBox">
-          <input type="password" id="oldPassword" placeholder="Старый пароль">
-        </div>
-      </div>
-      <div class="form-row">
-        <label style="display:block;">
-          <input type="checkbox" id="autoLoginCheck" checked>
-          Автоматически входить в аккаунт
-        </label>
-        <label style="display:block;">
-          <input type="checkbox" id="hideStatusCheck">
-          Скрыть пребывание на форуме и статус в этот раз
-        </label>
-      </div>
-      <button type="submit" class="btn-small" style="width:100%;">
-        Войти на форум
-      </button>
+      <button type="submit" class="btn-small" style="width:100%;">Войти на форум</button>
     </form>
   </div>
 </div>
 <script>
-  const CLOUD_URL = 'https://npoint.io';
   const DEFAULT_AVA =
     'data:image/svg+xml;utf8,' +
     '<svg xmlns="http://w3.org" width="64" height="64">' +
@@ -562,99 +316,54 @@
   let currentTopic = '';
   let activeFriend = '';
 
-  let topicsData = {
+  const defaultTopics = {
     news: {
       title: 'Новости',
-      posts: [{
-        owner: 'Основатель',
-        author: 'Основатель',
-        ava: '',
-        text: 'Добро пожаловать на форум GamePasta.ru!',
-        status: ''
-      }]
+      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru!', status: '' }]
     },
     rules: {
       title: 'Правила',
       posts: [{
-        owner: 'Основатель',
-        author: 'Основатель',
-        ava: '',
+        owner: 'Основатель', author: 'Основатель', ava: '', status: '',
         text:
-          '<b>1.1.</b> Запрещено участвовать в мошеннических, ' +
-          'провоцирующих, экстремистских и эксплойтных схемах.<br>' +
-          '<b>2.1.</b> Проверка проводится только при наличии ' +
-          'хотя бы 1 мелкого доказательства.<br>' +
-          '<b>2.2.</b> Места: сайт gamepasta.ru в ЛС, ВК, Teams, ' +
-          'Telegram, MAX, KakaoTalk.<br>' +
-          '<b>3.1.</b> Админка: 14+, стаж в CS > полгода, спокойствие, ' +
-          'грамотность.<br>' +
+          '<b>1.1.</b> Запрещено участвовать в мошеннических, провоцирующих, экстремистских и эксплойтных схемах.<br>' +
+          '<b>2.1.</b> Проверка проводится только при наличии хотя бы 1 мелкого доказательства.<br>' +
+          '<b>2.2.</b> Места: сайт gamepasta.ru в ЛС, ВК, Teams, Telegram, MAX, KakaoTalk.<br>' +
+          '<b>3.1.</b> Админка: 14+, стаж в CS > полгода, спокойствие, грамотность.<br>' +
           '<b>3.2.</b> Запрещено писать на почту и выпрашивать пароли.<br>' +
-          '<b>3.3.1.</b> Админу запрещено использовать ' +
-          '<span class="term-tip">читы<span class="tip-box">' +
-          'Постороннее ПО, макросы, которое не было предусмотрено ' +
-          'Верхом Сервера</span></span> и ' +
-          '<span class="term-tip">крашеры<span class="tip-box">' +
-          'ПО для краша сервера</span></span>.<br>' +
-          '<b>3.4.</b> Статус «На проверке» (10 дней / подозрение / ' +
-          '2 из 3 предов): проверка только в ЛС на сайте (фото и чат).',
-        status: ''
+          '<b>3.3.1.</b> Админу запрещено использовать <span class="term-tip">читы<span class="tip-box">Постороннее ПО, макросы, которое не было предусмотрено Верхом Сервера</span></span> и <span class="term-tip">крашеры<span class="tip-box">ПО для краша сервера</span></span>.<br>' +
+          '<b>3.4.</b> Статус «На проверке» (10 дней / подозрение / 2 из 3 предов): проверка только в ЛС на сайте (фото и чат).'
       }]
     },
     players: {
       title: 'Жалоба на обычных игроков',
-      posts: [{
-        owner: 'Lakar',
-        author: 'Lakar [Админ]',
-        ava: '',
-        text: 'Игрок Shadow_X забанен за ВХ.',
-        status: 'Одобрено'
-      }]
+      posts: [{ owner: 'Lakar', author: 'Lakar [Админ]', ava: '', text: 'Игрок Shadow_X забанен за ВХ.', status: 'Одобрено' }]
     },
     admins: {
       title: 'Жалоба на админов',
-      posts: [{
-        owner: 'Гражданин Москвы',
-        author: 'Гражданин Москвы',
-        ava: '',
-        text: 'Админ отменил ЛР при 2 игроках.',
-        status: 'Жалоба рассматривается'
-      }]
+      posts: [{ owner: 'Гражданин Москвы', author: 'Гражданин Москвы', ava: '', text: 'Админ отменил ЛР при 2 игроках.', status: 'Жалоба рассматривается' }]
     },
     faq: {
       title: 'Вопросы и ответы',
-      posts: [{
-        owner: 'Модератор',
-        author: 'Модератор',
-        ava: '',
-        text: 'Задавайте вопросы по форуму здесь.',
-        status: ''
-      }]
+      posts: [{ owner: 'Модератор', author: 'Модератор', ava: '', text: 'Задавайте вопросы по форуму здесь.', status: '' }]
     }
   };
-  let keysCache = {
-    adm: ['GP-ADM-2026-MOSCOW'],
-    mod: ['GP-MOD-9999-BOSS']
-  };
-  let pmsCache = {};
-  let usersCache = ['Lakar', 'Модератор', 'Основатель'];
-  let socialCache = {};
-  let bansCache = {
-    ids: ['STEAM_0:0:7771337'],
-    ips: ['185.12.44.90']
-  };
-  let isSaving = false;
 
-  const savedLocalTopics = localStorage.getItem('gamepasta_topics');
-  if (savedLocalTopics) {
-    try {
-      topicsData = JSON.parse(savedLocalTopics);
-    } catch (e) {}
+  let topicsData = JSON.parse(localStorage.getItem('gp_topics_v3')) || defaultTopics;
+  let keysCache = JSON.parse(localStorage.getItem('gp_keys_v3')) || { adm: ['GP-ADM-2026-MOSCOW'], mod: ['GP-MOD-9999-BOSS'] };
+  let pmsCache = JSON.parse(localStorage.getItem('gp_pms_v3')) || {};
+  let usersCache = JSON.parse(localStorage.getItem('gp_users_v3')) || ['Lakar', 'Модератор', 'Основатель', 'Философ'];
+  let socialCache = JSON.parse(localStorage.getItem('gp_social_v3')) || {};
+  let bansCache = JSON.parse(localStorage.getItem('gp_bans_v3')) || { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
+
+  function saveAll() {
+    localStorage.setItem('gp_topics_v3', JSON.stringify(topicsData));
+    localStorage.setItem('gp_keys_v3', JSON.stringify(keysCache));
+    localStorage.setItem('gp_pms_v3', JSON.stringify(pmsCache));
+    localStorage.setItem('gp_users_v3', JSON.stringify(usersCache));
+    localStorage.setItem('gp_social_v3', JSON.stringify(socialCache));
+    localStorage.setItem('gp_bans_v3', JSON.stringify(bansCache));
   }
-
-  function saveLocalTopics() {
-    localStorage.setItem('gamepasta_topics', JSON.stringify(topicsData));
-  }
-
   function getRoomId(u1, u2) {
     return [u1.toLowerCase(), u2.toLowerCase()].sort().join('__');
   }
@@ -677,130 +386,79 @@
       const desc = t.desc || descs[key] || 'Обсуждение темы.';
       let delBtn = '';
       if (u && u.isMod && !['players', 'admins', 'faq'].includes(key)) {
-        delBtn = `<button class="del-btn" ` +
-          `onclick="deleteCustomTopic('${key}')">[Удалить тему]</button>`;
+        delBtn = `<button class="del-btn" onclick="deleteCustomTopic('${key}')">[Удалить тему]</button>`;
       }
       tbody.innerHTML +=
         `<tr class="topic-row"><td>` +
-        `<a class="topic-title" onclick="openTopic('${key}')">${t.title}</a>` +
-        `${delBtn}<div class="topic-desc">${desc}</div></td>` +
-        `<td style="text-align:center;" id="count-${key}">` +
-        `${t.posts.length}</td></tr>`;
+        `<a class="topic-title" onclick="openTopic('${key}')">${t.title}</a>${delBtn}` +
+        `<div class="topic-desc">${desc}</div></td>` +
+        `<td style="text-align:center;" id="count-${key}">${t.posts.length}</td></tr>`;
     });
 
-    if (topicsData.news) {
-      document.getElementById('count-news').textContent =
-        topicsData.news.posts.length;
-    }
-    if (topicsData.rules) {
-      document.getElementById('count-rules').textContent =
-        topicsData.rules.posts.length;
-    }
+    if (topicsData.news) document.getElementById('count-news').textContent = topicsData.news.posts.length;
+    if (topicsData.rules) document.getElementById('count-rules').textContent = topicsData.rules.posts.length;
   }
 
-  function openNewTopicModal() {
-    document.getElementById('newTopicModal').style.display = 'flex';
-  }
-  function closeNewTopicModal() {
-    document.getElementById('newTopicModal').style.display = 'none';
-  }
+  function openNewTopicModal() { document.getElementById('newTopicModal').style.display = 'flex'; }
+  function closeNewTopicModal() { document.getElementById('newTopicModal').style.display = 'none'; }
 
-  document.getElementById('createTopicForm')
-    .addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const u = getUser();
-      if (!u || !u.isMod) return;
-      const title = document.getElementById('newTopicTitle').value.trim();
-      const desc = document.getElementById('newTopicDesc').value.trim();
-      const text = document.getElementById('newTopicFirstPost').value.trim();
-      if (!title || !text) return;
+  document.getElementById('createTopicForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const u = getUser();
+    if (!u || !u.isMod) return;
+    const title = document.getElementById('newTopicTitle').value.trim();
+    const desc = document.getElementById('newTopicDesc').value.trim();
+    const text = document.getElementById('newTopicFirstPost').value.trim();
+    if (!title || !text) return;
 
-      isSaving = true;
-      const newId = 'topic_' + Date.now();
-      topicsData[newId] = {
-        title: title,
-        desc: desc,
-        posts: [{
-          owner: u.name,
-          author: `${u.name} [${u.role}]`,
-          ava: u.ava || '',
-          text: text,
-          status: ''
-        }]
-      };
+    const newId = 'topic_' + Date.now();
+    topicsData[newId] = {
+      title: title,
+      desc: desc,
+      posts: [{ owner: u.name, author: `${u.name} [${u.role}]`, ava: u.ava || '', text: text, status: '' }]
+    };
 
-      saveLocalTopics();
-      document.getElementById('newTopicTitle').value = '';
-      document.getElementById('newTopicDesc').value = '';
-      document.getElementById('newTopicFirstPost').value = '';
-      closeNewTopicModal();
-      renderHomeTopics();
-      await saveToCloud();
-    });
+    saveAll();
+    document.getElementById('newTopicTitle').value = '';
+    document.getElementById('newTopicDesc').value = '';
+    document.getElementById('newTopicFirstPost').value = '';
+    closeNewTopicModal();
+    renderHomeTopics();
+  });
 
-  async function deleteCustomTopic(key) {
-    isSaving = true;
+  function deleteCustomTopic(key) {
     delete topicsData[key];
-    saveLocalTopics();
+    saveAll();
     renderHomeTopics();
-    await saveToCloud();
   }
-  const savedKeys = localStorage.getItem('gamepasta_keys_v2');
-  if (savedKeys) keysCache = JSON.parse(savedKeys);
-
-  const savedPms = localStorage.getItem('gamepasta_pms_v2');
-  if (savedPms) pmsCache = JSON.parse(savedPms);
-
-  const savedUsers = localStorage.getItem('gamepasta_users_v2');
-  if (savedUsers) usersCache = JSON.parse(savedUsers);
-
-  const savedBans = localStorage.getItem('gamepasta_bans_v2');
-  if (savedBans) bansCache = JSON.parse(savedBans);
-
-  async function syncFromCloud() {
-    renderHomeTopics();
-    if (currentTopic && topicsData[currentTopic]) renderPosts();
-    if (activeFriend) renderChat();
-  }
-
-  async function saveToCloud() {
-    saveLocalTopics();
-    localStorage.setItem('gamepasta_keys_v2', JSON.stringify(keysCache));
-    localStorage.setItem('gamepasta_pms_v2', JSON.stringify(pmsCache));
-    localStorage.setItem('gamepasta_users_v2', JSON.stringify(usersCache));
-    localStorage.setItem('gamepasta_bans_v2', JSON.stringify(bansCache));
-  }
-
   function renderBans() {
     const idBox = document.getElementById('bannedIdsList');
     const ipBox = document.getElementById('bannedIpsList');
     idBox.innerHTML = bansCache.ids.map((item, i) =>
-      `<span class="key-tag">${item} <b style="color:#800000; cursor:pointer;" ` +
-      `onclick="removeBan('id', ${i})">[X]</b></span>`
+      `<span class="key-tag">${item} <b style="color:#800000; cursor:pointer;" onclick="removeBan('id', ${i})">[X]</b></span>`
     ).join('') || '<span style="color:#666;">Нет банов</span>';
 
     ipBox.innerHTML = bansCache.ips.map((item, i) =>
-      `<span class="key-tag">${item} <b style="color:#800000; cursor:pointer;" ` +
-      `onclick="removeBan('ip', ${i})">[X]</b></span>`
+      `<span class="key-tag">${item} <b style="color:#800000; cursor:pointer;" onclick="removeBan('ip', ${i})">[X]</b></span>`
     ).join('') || '<span style="color:#666;">Нет банов</span>';
   }
 
-  async function addBan(type) {
+  function addBan(type) {
     const inp = document.getElementById(type === 'id' ? 'banIdInput' : 'banIpInput');
     const val = inp.value.trim();
     if (!val) return;
     if (type === 'id' && !bansCache.ids.includes(val)) bansCache.ids.push(val);
     if (type === 'ip' && !bansCache.ips.includes(val)) bansCache.ips.push(val);
     inp.value = '';
+    saveAll();
     renderBans();
-    await saveToCloud();
   }
 
-  async function removeBan(type, idx) {
+  function removeBan(type, idx) {
     if (type === 'id') bansCache.ids.splice(idx, 1);
     else bansCache.ips.splice(idx, 1);
+    saveAll();
     renderBans();
-    await saveToCloud();
   }
 
   function uploadAvatar(event) {
@@ -841,7 +499,7 @@
     const code = `GP-${type}-${num}-KEY`;
     if (type === 'ADM') keysCache.adm.push(code);
     else keysCache.mod.push(code);
-    saveToCloud();
+    saveAll();
     renderKeysList();
     alert(`Создан ключ (${type}): ${code}`);
   }
@@ -849,7 +507,7 @@
   function deleteKey(type, idx) {
     if (type === 'ADM') keysCache.adm.splice(idx, 1);
     else keysCache.mod.splice(idx, 1);
-    saveToCloud();
+    saveAll();
     renderKeysList();
   }
 
@@ -857,24 +515,16 @@
     const box = document.getElementById('keysListDisplay');
     let html = '<div><b>Админ:</b> ';
     keysCache.adm.forEach((k, i) => {
-      html += `<span class="key-tag">${k} ` +
-        `<b style="color:#a8071a; cursor:pointer;" ` +
-        `onclick="deleteKey('ADM', ${i})">[X]</b></span>`;
+      html += `<span class="key-tag">${k} <b style="color:#a8071a; cursor:pointer;" onclick="deleteKey('ADM', ${i})">[X]</b></span>`;
     });
     html += '</div><div style="margin-top:4px;"><b>Модер:</b> ';
     keysCache.mod.forEach((k, i) => {
-      html += `<span class="key-tag">${k} ` +
-        `<b style="color:#a8071a; cursor:pointer;" ` +
-        `onclick="deleteKey('MOD', ${i})">[X]</b></span>`;
+      html += `<span class="key-tag">${k} <b style="color:#a8071a; cursor:pointer;" onclick="deleteKey('MOD', ${i})">[X]</b></span>`;
     });
     box.innerHTML = html + '</div>';
   }
-  function openModal() {
-    document.getElementById('loginModal').style.display = 'flex';
-  }
-  function closeModal() {
-    document.getElementById('loginModal').style.display = 'none';
-  }
+  function openModal() { document.getElementById('loginModal').style.display = 'flex'; }
+  function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
 
   function toggleSimple() {
     const s = document.getElementById('simpleAccCheck').checked;
@@ -895,18 +545,9 @@
     document.getElementById('hideStatusCheck').disabled = s;
   }
 
-  function toggleAdmin() {
-    const c = document.getElementById('noCodeCheck').checked;
-    document.getElementById('adminCode').disabled = c;
-  }
-  function toggleMod() {
-    const c = document.getElementById('modCheck').checked;
-    document.getElementById('modBox').style.display = c ? 'block' : 'none';
-  }
-  function toggleLink() {
-    const c = document.getElementById('linkCheck').checked;
-    document.getElementById('linkBox').style.display = c ? 'block' : 'none';
-  }
+  function toggleAdmin() { document.getElementById('adminCode').disabled = document.getElementById('noCodeCheck').checked; }
+  function toggleMod() { document.getElementById('modBox').style.display = document.getElementById('modCheck').checked ? 'block' : 'none'; }
+  function toggleLink() { document.getElementById('linkBox').style.display = document.getElementById('linkCheck').checked ? 'block' : 'none'; }
 
   function getUser() {
     const r = localStorage.getItem('gamepasta_user');
@@ -941,99 +582,73 @@
     showHome();
   }
 
-  document.getElementById('authForm')
-    .addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const name = document.getElementById('username').value.trim();
-      const isSimple = document.getElementById('simpleAccCheck').checked;
-      const noCode = document.getElementById('noCodeCheck').checked;
-      const admVal = document.getElementById('adminCode').value.trim();
-      const isModCheck = document.getElementById('modCheck').checked;
-      const modVal = document.getElementById('modCode').value.trim();
-      const hideStatus = document.getElementById('hideStatusCheck').checked;
+  document.getElementById('authForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('username').value.trim();
+    const isSimple = document.getElementById('simpleAccCheck').checked;
+    const noCode = document.getElementById('noCodeCheck').checked;
+    const admVal = document.getElementById('adminCode').value.trim();
+    const isModCheck = document.getElementById('modCheck').checked;
+    const modVal = document.getElementById('modCode').value.trim();
+    const hideStatus = document.getElementById('hideStatusCheck').checked;
 
-      let isAdm = false;
-      let isMod = false;
+    let isAdm = false;
+    let isMod = false;
 
-      if (!isSimple && !noCode) {
-        if (!keysCache.adm.includes(admVal)) {
-          alert('ОШИБКА: Неверный код администрации!');
-          return;
-        }
-        isAdm = true;
-      }
-      if (!isSimple && isModCheck) {
-        if (!keysCache.mod.includes(modVal)) {
-          alert('ОШИБКА: Неверный код модератора!');
-          return;
-        }
-        isMod = true;
-      }
+    if (!isSimple && !noCode) {
+      if (!keysCache.adm.includes(admVal)) { alert('ОШИБКА: Неверный код администрации!'); return; }
+      isAdm = true;
+    }
+    if (!isSimple && isModCheck) {
+      if (!keysCache.mod.includes(modVal)) { alert('ОШИБКА: Неверный код модератора!'); return; }
+      isMod = true;
+    }
 
-      let role = 'Обычный игрок';
-      if (isSimple) role = 'Простой аккаунт';
-      else if (isAdm && isMod) role = 'Главный Админ-Модератор';
-      else if (isMod) role = 'Админ-модератор';
-      else if (isAdm) role = 'Админ-игрок [На проверке]';
+    let role = 'Обычный игрок';
+    if (isSimple) role = 'Простой аккаунт';
+    else if (isAdm && isMod) role = 'Главный Админ-Модератор';
+    else if (isMod) role = 'Админ-модератор';
+    else if (isAdm) role = 'Админ-игрок [На проверке]';
 
-      const old = getUser();
-      const ava = (old && old.name === name && !isSimple) ? (old.ava || '') : '';
-      const bio = (old && old.name === name && !isSimple) ? (old.bio || '') : '';
-      const data = JSON.stringify({
-        name, role, isSimple, isAdm, isMod, hideStatus, ava, bio
-      });
-      localStorage.setItem('gamepasta_user', data);
+    const old = getUser();
+    const ava = (old && old.name === name && !isSimple) ? (old.ava || '') : '';
+    const bio = (old && old.name === name && !isSimple) ? (old.bio || '') : '';
+    localStorage.setItem('gamepasta_user', JSON.stringify({ name, role, isSimple, isAdm, isMod, hideStatus, ava, bio }));
 
-      if (!isSimple) {
-        const ex = usersCache.some(u => u.toLowerCase() === name.toLowerCase());
-        if (!ex) {
-          usersCache.push(name);
-          await saveToCloud();
-        }
-      }
-      renderUser();
-      closeModal();
-      if (currentTopic) openTopic(currentTopic);
-    });
+    if (!isSimple && !usersCache.some(u => u.toLowerCase() === name.toLowerCase())) {
+      usersCache.push(name);
+      saveAll();
+    }
+    renderUser();
+    closeModal();
+    if (currentTopic) openTopic(currentTopic);
+  });
   function showHome() {
     currentTopic = '';
     activeFriend = '';
     document.getElementById('homeView').style.display = 'block';
     document.getElementById('topicView').style.display = 'none';
     document.getElementById('cabinetView').style.display = 'none';
-    document.getElementById('breadcrumbs').innerHTML =
-      '<a onclick="showHome()">Список форумов</a> &raquo; Главное меню';
-    syncFromCloud();
+    document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Главное меню';
+    renderHomeTopics();
   }
 
   function getUserSocial() {
     const u = getUser();
     if (!u) return { friends: ['Lakar', 'Модератор'], foes: [] };
     const key = u.name.toLowerCase();
-    if (socialCache[key]) return socialCache[key];
-    const loc = localStorage.getItem('gamepasta_soc_' + key);
-    if (loc) {
-      socialCache[key] = JSON.parse(loc);
-      return socialCache[key];
-    }
-    socialCache[key] = { friends: ['Lakar', 'Модератор'], foes: [] };
+    if (!socialCache[key]) socialCache[key] = { friends: ['Lakar', 'Модератор'], foes: [] };
     return socialCache[key];
   }
 
-  function getFriends() {
-    return getUserSocial().friends;
-  }
-  function getFoes() {
-    return getUserSocial().foes;
-  }
+  function getFriends() { return getUserSocial().friends; }
+  function getFoes() { return getUserSocial().foes; }
 
-  async function saveSocialData(friendsArr, foesArr) {
+  function saveSocialData(friendsArr, foesArr) {
     const u = getUser();
     if (!u) return;
-    const key = u.name.toLowerCase();
-    socialCache[key] = { friends: friendsArr, foes: foesArr };
-    localStorage.setItem('gamepasta_soc_' + key, JSON.stringify(socialCache[key]));
-    await saveToCloud();
+    socialCache[u.name.toLowerCase()] = { friends: friendsArr, foes: foesArr };
+    saveAll();
   }
 
   function saveBio() {
@@ -1053,66 +668,48 @@
     document.getElementById('homeView').style.display = 'none';
     document.getElementById('topicView').style.display = 'none';
     document.getElementById('cabinetView').style.display = 'block';
-    document.getElementById('breadcrumbs').innerHTML =
-      '<a onclick="showHome()">Список форумов</a> &raquo; Личный раздел';
+    document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Личный раздел';
 
     document.getElementById('cabAvatarImg').src = u.ava || DEFAULT_AVA;
     const st = u.hideStatus ? 'Скрыт (Невидимка)' : 'Виден всем (Онлайн)';
-    document.getElementById('cabProfileInfo').innerHTML =
-      `<b>Ник:</b> ${u.name}<br><b>Группа:</b> ${u.role}<br><b>Статус:</b> ${st}`;
+    document.getElementById('cabProfileInfo').innerHTML = `<b>Ник:</b> ${u.name}<br><b>Группа:</b> ${u.role}<br><b>Статус:</b> ${st}`;
     document.getElementById('userBioInput').value = u.bio || '';
 
     const isStaff = (u.isAdm || u.isMod);
-    document.getElementById('adminBanPanel').style.display =
-      isStaff ? 'block' : 'none';
+    document.getElementById('adminBanPanel').style.display = isStaff ? 'block' : 'none';
     if (isStaff) renderBans();
 
-    document.getElementById('keygenPanel').style.display =
-      u.isMod ? 'block' : 'none';
+    document.getElementById('keygenPanel').style.display = u.isMod ? 'block' : 'none';
     if (u.isMod) renderKeysList();
 
-    document.getElementById('avaUploadBlock').style.display =
-      u.isSimple ? 'none' : 'block';
-    document.getElementById('bioBlock').style.display =
-      u.isSimple ? 'none' : 'block';
-    document.getElementById('cabSimpleBlocked').style.display =
-      u.isSimple ? 'block' : 'none';
-    document.getElementById('cabContent').style.display =
-      u.isSimple ? 'none' : 'flex';
+    document.getElementById('avaUploadBlock').style.display = u.isSimple ? 'none' : 'block';
+    document.getElementById('bioBlock').style.display = u.isSimple ? 'none' : 'block';
+    document.getElementById('cabSimpleBlocked').style.display = u.isSimple ? 'block' : 'none';
+    document.getElementById('cabContent').style.display = u.isSimple ? 'none' : 'flex';
 
-    if (!u.isSimple) {
-      renderFriends();
-      renderFoes();
-    }
-    syncFromCloud();
+    if (!u.isSimple) { renderFriends(); renderFoes(); }
   }
 
   function renderFriends() {
-    const list = getFriends();
     const box = document.getElementById('friendsListBox');
     if (!box) return;
     box.innerHTML = '';
-    list.forEach((f, idx) => {
-      const cls = (f === activeFriend)
-        ? 'friend-item friend-active' : 'friend-item';
+    getFriends().forEach((f, idx) => {
+      const cls = (f === activeFriend) ? 'friend-item friend-active' : 'friend-item';
       box.innerHTML +=
-        `<div class="${cls}" onclick="selectFriend('${f}')">` +
-        `<span>${f}</span>` +
-        `<span onclick="event.stopPropagation(); delFriend(${idx})" ` +
-        `style="color:#800000; font-weight:bold;">[X]</span></div>`;
+        `<div class="${cls}" onclick="selectFriend('${f}')"><span>${f}</span>` +
+        `<span onclick="event.stopPropagation(); delFriend(${idx})" style="color:#800000; font-weight:bold;">[X]</span></div>`;
     });
   }
 
   function renderFoes() {
-    const list = getFoes();
     const box = document.getElementById('foesListBox');
     if (!box) return;
     box.innerHTML = '';
-    list.forEach((f, idx) => {
+    getFoes().forEach((f, idx) => {
       box.innerHTML +=
         `<div class="foe-item"><span>${f}</span>` +
-        `<span onclick="delFoe(${idx})" ` +
-        `style="color:#800000; font-weight:bold; cursor:pointer;">[X]</span></div>`;
+        `<span onclick="delFoe(${idx})" style="color:#800000; font-weight:bold; cursor:pointer;">[X]</span></div>`;
     });
   }
 
@@ -1124,59 +721,43 @@
     setTimeout(() => { el.textContent = ''; }, 3000);
   }
 
-  async function addFriend() {
+  function addFriend() {
     const inp = document.getElementById('newFriendInput');
     const raw = inp.value.trim();
     if (!raw) return;
-    await syncFromCloud();
     const me = getUser();
-    if (me && me.name.toLowerCase() === raw.toLowerCase()) {
-      setStatusText('friendStatusMsg', 'Нельзя добавить себя', true);
-      return;
-    }
+    if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('friendStatusMsg', 'Нельзя добавить себя', true); return; }
     const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
     if (!found) { setStatusText('friendStatusMsg', 'Не найдено', true); return; }
     const list = getFriends();
     if (!list.includes(found)) {
-      isSaving = true;
       list.push(found);
-      inp.value = '';
-      renderFriends();
+      saveSocialData(list, getFoes());
       setStatusText('friendStatusMsg', `Добавлен: ${found}`, false);
-      await saveSocialData(list, getFoes());
-    } else {
-      inp.value = '';
     }
+    inp.value = '';
+    renderFriends();
   }
 
-  async function addFoe() {
+  function addFoe() {
     const inp = document.getElementById('newFoeInput');
     const raw = inp.value.trim();
     if (!raw) return;
-    await syncFromCloud();
     const me = getUser();
-    if (me && me.name.toLowerCase() === raw.toLowerCase()) {
-      setStatusText('foeStatusMsg', 'Нельзя добавить себя', true);
-      return;
-    }
+    if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('foeStatusMsg', 'Нельзя добавить себя', true); return; }
     const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
     if (!found) { setStatusText('foeStatusMsg', 'Не найдено', true); return; }
     const foes = getFoes();
     if (!foes.includes(found)) {
-      isSaving = true;
       foes.push(found);
-      const newFriends = getFriends().filter(x => x !== found);
-      inp.value = '';
-      renderFriends();
-      renderFoes();
+      saveSocialData(getFriends().filter(x => x !== found), foes);
       setStatusText('foeStatusMsg', `В ЧС: ${found}`, false);
-      await saveSocialData(newFriends, foes);
-    } else {
-      inp.value = '';
     }
+    inp.value = '';
+    renderFriends();
+    renderFoes();
   }
-  async function delFriend(idx) {
-    isSaving = true;
+  function delFriend(idx) {
     const list = getFriends();
     if (list[idx] === activeFriend) {
       activeFriend = '';
@@ -1184,16 +765,15 @@
       document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
     }
     list.splice(idx, 1);
+    saveSocialData(list, getFoes());
     renderFriends();
-    await saveSocialData(list, getFoes());
   }
 
-  async function delFoe(idx) {
-    isSaving = true;
+  function delFoe(idx) {
     const list = getFoes();
     list.splice(idx, 1);
+    saveSocialData(getFriends(), list);
     renderFoes();
-    await saveSocialData(getFriends(), list);
   }
 
   function selectFriend(name) {
@@ -1201,7 +781,7 @@
     document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`;
     document.getElementById('pmSendArea').style.display = 'block';
     renderFriends();
-    syncFromCloud();
+    renderChat();
   }
 
   function renderChat() {
@@ -1215,7 +795,7 @@
     log.scrollTop = log.scrollHeight;
   }
 
-  async function sendPM() {
+  function sendPM() {
     const u = getUser();
     const inp = document.getElementById('pmInput');
     const txt = inp.value.trim();
@@ -1224,8 +804,8 @@
     if (!pmsCache[room]) pmsCache[room] = [];
     pmsCache[room].push(`<b>${u.name}:</b> ${txt}`);
     inp.value = '';
+    saveAll();
     renderChat();
-    await saveToCloud();
   }
 
   function openTopic(id) {
@@ -1237,8 +817,7 @@
     document.getElementById('cabinetView').style.display = 'none';
     document.getElementById('topicView').style.display = 'block';
     document.getElementById('topicHeaderTitle').textContent = t.title;
-    document.getElementById('breadcrumbs').innerHTML =
-      `<a onclick="showHome()">Список форумов</a> &raquo; ${t.title}`;
+    document.getElementById('breadcrumbs').innerHTML = `<a onclick="showHome()">Список форумов</a> &raquo; ${t.title}`;
 
     const warn = document.getElementById('simpleWarnText');
     const area = document.getElementById('postText');
@@ -1252,7 +831,6 @@
       area.disabled = (u && u.isSimple && id === 'admins');
     }
     renderPosts();
-    syncFromCloud();
   }
 
   function renderPosts() {
@@ -1264,53 +842,37 @@
 
     t.posts.forEach((p, idx) => {
       if (foes.includes(p.owner)) {
-        c.innerHTML +=
-          `<div class="post-box" style="background:#f5d6d6; color:#800000;">` +
-          `Сообщение от <b>${p.owner}</b> скрыто (пользователь в списке недругов).` +
-          `</div>`;
+        c.innerHTML += `<div class="post-box" style="background:#f5d6d6; color:#800000;">Сообщение от <b>${p.owner}</b> скрыто (в недругах).</div>`;
         return;
       }
       let badge = '';
-      if (p.status === 'Жалоба рассматривается') {
-        badge = `<div class="badge badge-wait">${p.status}</div>`;
-      }
-      if (p.status === 'Одобрено') {
-        badge = `<div class="badge badge-ok">${p.status}</div>`;
-      }
-      const del = (u && (u.name === p.owner || u.isMod))
-        ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
+      if (p.status === 'Жалоба рассматривается') badge = `<div class="badge badge-wait">${p.status}</div>`;
+      if (p.status === 'Одобрено') badge = `<div class="badge badge-ok">${p.status}</div>`;
+      const del = (u && (u.name === p.owner || u.isMod)) ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
       let mod = '';
       if (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins')) {
-        mod =
-          `<div style="margin-top:6px;">` +
-          `<button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> ` +
-          `<button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`;
+        mod = `<div style="margin-top:6px;"><button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> <button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`;
       }
-      const bioLine = p.bio
-        ? `<div style="font-size:10px; color:#555; margin-top:4px; border-top:1px dotted #ccc; padding-top:2px;"><i>${p.bio}</i></div>`
-        : '';
+      const bioLine = p.bio ? `<div style="font-size:10px; color:#555; margin-top:4px; border-top:1px dotted #ccc; padding-top:2px;"><i>${p.bio}</i></div>` : '';
       c.innerHTML +=
         `<div class="post-box"><div class="post-header">` +
         `<span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span>` +
-        `</div><div class="post-body-wrap">` +
-        `<img src="${p.ava || DEFAULT_AVA}" class="ava-post">` +
-        `<div style="flex:1;"><div>${p.text}</div>${bioLine}${badge}${mod}</div>` +
-        `</div></div>`;
+        `</div><div class="post-body-wrap"><img src="${p.ava || DEFAULT_AVA}" class="ava-post">` +
+        `<div style="flex:1;"><div>${p.text}</div>${bioLine}${badge}${mod}</div></div></div>`;
     });
   }
 
   function delPost(idx) {
     topicsData[currentTopic].posts.splice(idx, 1);
-    document.getElementById('count-' + currentTopic).textContent =
-      topicsData[currentTopic].posts.length;
+    document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
+    saveAll();
     renderPosts();
-    saveToCloud();
   }
 
   function setSt(idx, st) {
     topicsData[currentTopic].posts[idx].status = st;
+    saveAll();
     renderPosts();
-    saveToCloud();
   }
 
   function addPost() {
@@ -1320,26 +882,17 @@
     const text = document.getElementById('postText').value.trim();
     if (!text) return;
 
-    const st = (currentTopic === 'players' || currentTopic === 'admins')
-      ? 'Жалоба рассматривается' : '';
+    const st = (currentTopic === 'players' || currentTopic === 'admins') ? 'Жалоба рассматривается' : '';
     topicsData[currentTopic].posts.push({
-      owner: u.name,
-      author: `${u.name} [${u.role}]`,
-      ava: u.ava || '',
-      bio: u.bio || '',
-      text: text,
-      status: st
+      owner: u.name, author: `${u.name} [${u.role}]`, ava: u.ava || '', bio: u.bio || '', text: text, status: st
     });
     document.getElementById('postText').value = '';
-    document.getElementById('count-' + currentTopic).textContent =
-      topicsData[currentTopic].posts.length;
+    document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
+    saveAll();
     renderPosts();
-    saveToCloud();
   }
 
   renderUser();
-  syncFromCloud();
-  setInterval(syncFromCloud, 4000);
 </script>
 </body>
 </html>
