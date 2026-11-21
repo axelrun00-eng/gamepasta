@@ -140,7 +140,6 @@ async function checkServersPing() {
   }
   renderServers();
 }
-
 async function syncFromCloud() {
   if (isSaving) return;
   try {
