@@ -86,34 +86,31 @@ function saveLocalBackup() {
 
 async function checkOneMcServer(ipRaw) {
   const clean = ipRaw.trim();
-  const parts = clean.split(':');
-  const host = parts.at(0);
-  const port = parts.at(1) || '25565';
   const start = Date.now();
+  const enc = encodeURIComponent(clean);
+  const t = Date.now();
 
-  try {
-    const r1 = await fetch('https://mcstatus.io' + encodeURIComponent(clean));
-    const d1 = await r1.json();
-    if (d1 && d1.online) {
-      return { online: true, ms: Date.now() - start, now: d1.players ? d1.players.online : 0, max: d1.players ? d1.players.max : 20 };
-    }
-  } catch (e) {}
+  const urls = [
+    `https://mcsrvstat.us{enc}?t=${t}`,
+    `https://mcsrvstat.us{enc}?t=${t}`,
+    `https://mcstatus.io{enc}`,
+    `https://mcstatus.io{enc}`
+  ];
 
-  try {
-    const r2 = await fetch('https://mcsrvstat.us' + encodeURIComponent(clean) + '?t=' + Date.now());
-    const d2 = await r2.json();
-    if (d2 && d2.online) {
-      return { online: true, ms: Date.now() - start, now: d2.players ? d2.players.online : 0, max: d2.players ? d2.players.max : 20 };
-    }
-  } catch (e) {}
+  const results = await Promise.all(
+    urls.map(u => fetch(u).then(r => r.json()).catch(() => null))
+  );
 
-  try {
-    const r3 = await fetch(`https://mcapi.us{encodeURIComponent(host)}&port=${port}`);
-    const d3 = await r3.json();
-    if (d3 && d3.online) {
-      return { online: true, ms: Date.now() - start, now: d3.players ? d3.players.now : 0, max: d3.players ? d3.players.max : 20 };
+  for (const d of results) {
+    if (d && d.online) {
+      return {
+        online: true,
+        ms: Date.now() - start,
+        now: d.players ? d.players.online : 0,
+        max: d.players ? d.players.max : 20
+      };
     }
-  } catch (e) {}
+  }
 
   return { online: false };
 }
@@ -143,6 +140,7 @@ async function checkServersPing() {
   }
   renderServers();
 }
+
 async function syncFromCloud() {
   if (isSaving) return;
   try {
