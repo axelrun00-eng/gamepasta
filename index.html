@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v4.7 Cloud)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.8 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -110,7 +110,7 @@
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.7 Cloud]</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.8 Cloud]</h1>
       <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
@@ -407,6 +407,32 @@
   let serversCache = [];
   let serversStatus = {};
 
+  const localBackup = localStorage.getItem('gp_cloud_backup_v4');
+  if (localBackup) {
+    try {
+      const b = JSON.parse(localBackup);
+      if (b.topics) topicsData = b.topics;
+      if (b.keys) keysCache = b.keys;
+      if (b.pms) pmsCache = b.pms;
+      if (b.users) usersCache = b.users;
+      if (b.social) socialCache = b.social;
+      if (b.bans) bansCache = b.bans;
+      if (Array.isArray(b.servers)) serversCache = b.servers;
+    } catch (e) {}
+  }
+
+  function saveLocalBackup() {
+    localStorage.setItem('gp_cloud_backup_v4', JSON.stringify({
+      topics: topicsData,
+      keys: keysCache,
+      pms: pmsCache,
+      users: usersCache,
+      social: socialCache,
+      bans: bansCache,
+      servers: serversCache
+    }));
+  }
+
   async function checkOneMcServer(ipRaw) {
     const clean = ipRaw.trim();
     const parts = clean.split(':');
@@ -489,19 +515,18 @@
       const rows = await res.json();
       if (isSaving) return;
       const firstRow = Array.isArray(rows) ? rows.at(0) : null;
-      if (firstRow && firstRow.payload) {
+      if (firstRow && firstRow.payload && firstRow.payload.topics) {
         const d = firstRow.payload;
-        if (d.topics && Object.keys(d.topics).length > 0) {
-          topicsData = d.topics;
-          if (d.keys) keysCache = d.keys;
-          if (d.pms) pmsCache = d.pms;
-          if (d.users) usersCache = d.users;
-          if (d.social) socialCache = d.social;
-          if (d.bans) bansCache = d.bans;
-          if (Array.isArray(d.servers)) serversCache = d.servers;
-        } else {
-          await saveAll();
-        }
+        topicsData = d.topics;
+        if (d.keys) keysCache = d.keys;
+        if (d.pms) pmsCache = d.pms;
+        if (d.users) usersCache = d.users;
+        if (d.social) socialCache = d.social;
+        if (d.bans) bansCache = d.bans;
+        if (Array.isArray(d.servers)) serversCache = d.servers;
+        saveLocalBackup();
+      } else {
+        await saveAll();
       }
       renderHomeTopics();
       checkServersPing();
@@ -515,12 +540,17 @@
   }
 
   async function saveAll() {
+    saveLocalBackup();
     isSaving = true;
     try {
-      await fetch(SB_URL, {
-        method: 'PATCH',
-        headers: SB_HEADERS,
+      await fetch('https://supabase.co', {
+        method: 'POST',
+        headers: {
+          ...SB_HEADERS,
+          'Prefer': 'resolution=merge-duplicates'
+        },
         body: JSON.stringify({
+          id: 1,
           payload: {
             topics: topicsData,
             keys: keysCache,
@@ -582,8 +612,9 @@
     document.getElementById('srvName').value = '';
     document.getElementById('srvIp').value = '';
     closeServerModal();
-    checkServersPing();
+    renderServers();
     await saveAll();
+    checkServersPing();
   });
 
   async function deleteServer(idx) {
