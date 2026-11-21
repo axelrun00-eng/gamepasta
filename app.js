@@ -1,4 +1,14 @@
-const CLOUD_URL = 'https://npoint.io';
+const GH_OWNER = 'axelrun00-eng';
+const GH_REPO = 'gamepasta';
+const GH_FILE = 'db.json';
+const GH_TOKEN = atob('Z2hwX2xLR2tOQzI0Vmw4czZtaFF6enhHWUs4TmpLZWEzRzFMVVM5Yg==');
+const GH_API_URL = `https://github.com{GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+const GH_HEADERS = {
+  'Authorization': 'token ' + GH_TOKEN,
+  'Accept': 'application/vnd.github+json'
+};
+
+let lastFileSha = '';
 
 function applySiteTheme(mode) {
   const isMod = (mode === 'modernic');
@@ -7,8 +17,8 @@ function applySiteTheme(mode) {
   const sub = document.getElementById('themeSubtitle');
   if (btn) btn.textContent = isMod ? '[ Стиль: Modernic ]' : '[ Стиль: OldSchool ]';
   if (sub) sub.textContent = isMod
-    ? 'Modernic Dark Gaming Edition • Cloud Sync'
-    : 'Windows XP Olive Edition • Cloud Sync';
+    ? 'Modernic Dark Gaming Edition • GitHub Cloud Sync'
+    : 'Windows XP Olive Edition • GitHub Cloud Sync';
 }
 
 function toggleSiteTheme() {
@@ -97,6 +107,14 @@ function saveLocalBackup() {
     servers: serversCache
   }));
 }
+function utf8ToB64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function b64ToUtf8(b64) {
+  return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+}
+
 async function checkOneMcServer(ipRaw) {
   const clean = ipRaw.trim();
   const start = Date.now();
@@ -166,25 +184,34 @@ async function forceSyncNow() {
 async function syncFromCloud() {
   if (isSaving) return;
   try {
-    const res = await fetch(CLOUD_URL);
+    const res = await fetch(GH_API_URL + '?t=' + Date.now(), { headers: GH_HEADERS });
+    if (res.status === 404) {
+      await saveAll();
+      return;
+    }
     if (!res.ok) {
       setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
       return;
     }
-    const d = await res.json();
+    const meta = await res.json();
     if (isSaving) return;
-    if (d && d.topics) {
-      topicsData = d.topics;
-      if (d.keys) keysCache = d.keys;
-      if (d.pms) pmsCache = d.pms;
-      if (d.users) usersCache = d.users;
-      if (d.social) socialCache = d.social;
-      if (d.bans) bansCache = d.bans;
-      if (Array.isArray(d.servers)) serversCache = d.servers;
-      saveLocalBackup();
-      setCloudBadge('[ Облако: OK ]');
-    } else {
-      await saveAll();
+    if (meta && meta.sha) lastFileSha = meta.sha;
+    if (meta && meta.content) {
+      const rawText = b64ToUtf8(meta.content).trim();
+      const d = rawText ? JSON.parse(rawText) : {};
+      if (d && d.topics) {
+        topicsData = d.topics;
+        if (d.keys) keysCache = d.keys;
+        if (d.pms) pmsCache = d.pms;
+        if (d.users) usersCache = d.users;
+        if (d.social) socialCache = d.social;
+        if (d.bans) bansCache = d.bans;
+        if (Array.isArray(d.servers)) serversCache = d.servers;
+        saveLocalBackup();
+        setCloudBadge('[ Облако: OK ]');
+      } else {
+        await saveAll();
+      }
     }
     renderHomeTopics();
     checkServersPing();
@@ -203,19 +230,42 @@ async function saveAll() {
   saveLocalBackup();
   isSaving = true;
   try {
-    const res = await fetch(CLOUD_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        topics: topicsData,
-        keys: keysCache,
-        pms: pmsCache,
-        users: usersCache,
-        social: socialCache,
-        bans: bansCache,
-        servers: serversCache
-      })
+    if (!lastFileSha) {
+      const check = await fetch(GH_API_URL + '?t=' + Date.now(), { headers: GH_HEADERS });
+      if (check.ok) {
+        const m = await check.json();
+        if (m && m.sha) lastFileSha = m.sha;
+      }
+    }
+    const payloadStr = JSON.stringify({
+      topics: topicsData,
+      keys: keysCache,
+      pms: pmsCache,
+      users: usersCache,
+      social: socialCache,
+      bans: bansCache,
+      servers: serversCache
+    }, null, 2);
+
+    const bodyObj = {
+      message: 'Sync GamePasta DB',
+      content: utf8ToB64(payloadStr)
+    };
+    if (lastFileSha) bodyObj.sha = lastFileSha;
+
+    const res = await fetch(GH_API_URL, {
+      method: 'PUT',
+      headers: { ...GH_HEADERS, 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyObj)
     });
-    setCloudBadge(res.ok ? '[ Облако: Сохранено ]' : '[ Облако: Ошибка ' + res.status + ' ]');
+    if (res.ok) {
+      const out = await res.json();
+      if (out && out.content && out.content.sha) lastFileSha = out.content.sha;
+      setCloudBadge('[ Облако: Сохранено ]');
+    } else {
+      lastFileSha = '';
+      setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
+    }
   } catch (e) {
     setCloudBadge('[ Облако: Ошибка сети ]');
   }
