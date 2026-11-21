@@ -204,8 +204,7 @@ async function saveAll() {
   isSaving = true;
   try {
     const res = await fetch(CLOUD_URL, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
       body: JSON.stringify({
         topics: topicsData,
         keys: keysCache,
