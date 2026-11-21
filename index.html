@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v4.8 Cloud)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.9 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -110,7 +110,7 @@
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.8 Cloud]</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.9 Cloud]</h1>
       <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
@@ -507,7 +507,6 @@
     }
     renderServers();
   }
-
   async function syncFromCloud() {
     if (isSaving) return;
     try {
@@ -525,7 +524,7 @@
         if (d.bans) bansCache = d.bans;
         if (Array.isArray(d.servers)) serversCache = d.servers;
         saveLocalBackup();
-      } else {
+      } else if (res.ok) {
         await saveAll();
       }
       renderHomeTopics();
@@ -543,14 +542,13 @@
     saveLocalBackup();
     isSaving = true;
     try {
-      await fetch('https://supabase.co', {
-        method: 'POST',
+      const res = await fetch('https://supabase.co', {
+        method: 'PATCH',
         headers: {
           ...SB_HEADERS,
-          'Prefer': 'resolution=merge-duplicates'
+          'Prefer': 'return=representation'
         },
         body: JSON.stringify({
-          id: 1,
           payload: {
             topics: topicsData,
             keys: keysCache,
@@ -562,10 +560,15 @@
           }
         })
       });
-    } catch (e) {}
+      if (!res.ok) {
+        const errTxt = await res.text();
+        alert('Ошибка записи в Supabase (' + res.status + '): ' + errTxt);
+      }
+    } catch (e) {
+      alert('Ошибка сети при сохранении: ' + e.message);
+    }
     isSaving = false;
   }
-
   function renderServers() {
     const tbody = document.getElementById('serversMonitorBody');
     const srvBar = document.getElementById('modAddServerBar');
@@ -1021,145 +1024,3 @@
       await saveSocialData(newFriends, foes);
     } else inp.value = '';
   }
-  async function delFriend(idx) {
-    const list = getFriends();
-    if (list[idx] === activeFriend) {
-      activeFriend = '';
-      document.getElementById('pmSendArea').style.display = 'none';
-      document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
-    }
-    list.splice(idx, 1);
-    renderFriends();
-    await saveSocialData(list, getFoes());
-  }
-
-  async function delFoe(idx) {
-    const list = getFoes();
-    list.splice(idx, 1);
-    renderFoes();
-    await saveSocialData(getFriends(), list);
-  }
-
-  function selectFriend(name) {
-    activeFriend = name;
-    document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`;
-    document.getElementById('pmSendArea').style.display = 'block';
-    renderFriends();
-    syncFromCloud();
-  }
-
-  function renderChat() {
-    const u = getUser();
-    if (!u || !activeFriend) return;
-    const msgs = pmsCache[getRoomId(u.name, activeFriend)] || [];
-    const log = document.getElementById('pmChatLog');
-    log.innerHTML = msgs.length
-      ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('')
-      : '<span style="color:#555;">Сообщений нет.</span>';
-    log.scrollTop = log.scrollHeight;
-  }
-
-  async function sendPM() {
-    const u = getUser();
-    const inp = document.getElementById('pmInput');
-    const txt = inp.value.trim();
-    if (!txt || !activeFriend || !u) return;
-    const room = getRoomId(u.name, activeFriend);
-    if (!pmsCache[room]) pmsCache[room] = [];
-    pmsCache[room].push(`<b>${u.name}:</b> ${txt}`);
-    inp.value = '';
-    renderChat();
-    await saveAll();
-  }
-
-  function openTopic(id) {
-    currentTopic = id;
-    activeFriend = '';
-    const t = topicsData[id];
-    const u = getUser();
-    document.getElementById('homeView').style.display = 'none';
-    document.getElementById('cabinetView').style.display = 'none';
-    document.getElementById('topicView').style.display = 'block';
-    document.getElementById('topicHeaderTitle').textContent = t.title;
-    document.getElementById('breadcrumbs').innerHTML = `<a onclick="showHome()">Список форумов</a> &raquo; ${t.title}`;
-
-    const warn = document.getElementById('simpleWarnText');
-    const area = document.getElementById('postText');
-    const box = document.getElementById('replyBox');
-
-    if ((id === 'news' || id === 'rules') && (!u || !u.isMod)) {
-      box.style.display = 'none';
-    } else {
-      box.style.display = 'block';
-      warn.style.display = (u && u.isSimple && id === 'admins') ? 'block' : 'none';
-      area.disabled = (u && u.isSimple && id === 'admins');
-    }
-    renderPosts();
-    syncFromCloud();
-  }
-
-  function renderPosts() {
-    const t = topicsData[currentTopic];
-    const u = getUser();
-    const foes = getFoes();
-    const c = document.getElementById('postsContainer');
-    c.innerHTML = '';
-
-    t.posts.forEach((p, idx) => {
-      if (foes.includes(p.owner)) {
-        c.innerHTML += `<div class="post-box" style="background:#f5d6d6; color:#800000;">Сообщение от <b>${p.owner}</b> скрыто (в недругах).</div>`;
-        return;
-      }
-      let badge = '';
-      if (p.status === 'Жалоба рассматривается') badge = `<div class="badge badge-wait">${p.status}</div>`;
-      if (p.status === 'Одобрено') badge = `<div class="badge badge-ok">${p.status}</div>`;
-      const del = (u && (u.name === p.owner || u.isMod)) ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
-      let mod = '';
-      if (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins')) {
-        mod = `<div style="margin-top:6px;"><button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> <button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`;
-      }
-      const bioLine = p.bio ? `<div style="font-size:10px; color:#555; margin-top:4px; border-top:1px dotted #ccc; padding-top:2px;"><i>${p.bio}</i></div>` : '';
-      c.innerHTML +=
-        `<div class="post-box"><div class="post-header">` +
-        `<span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span>` +
-        `</div><div class="post-body-wrap"><img src="${p.ava || DEFAULT_AVA}" class="ava-post">` +
-        `<div style="flex:1;"><div>${p.text}</div>${bioLine}${badge}${mod}</div></div></div>`;
-    });
-  }
-
-  function delPost(idx) {
-    topicsData[currentTopic].posts.splice(idx, 1);
-    document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
-    renderPosts();
-    saveAll();
-  }
-
-  function setSt(idx, st) {
-    topicsData[currentTopic].posts[idx].status = st;
-    renderPosts();
-    saveAll();
-  }
-
-  function addPost() {
-    const u = getUser();
-    if (!u) { openModal(); return; }
-    if (u.isSimple && currentTopic === 'admins') return;
-    const text = document.getElementById('postText').value.trim();
-    if (!text) return;
-
-    const st = (currentTopic === 'players' || currentTopic === 'admins') ? 'Жалоба рассматривается' : '';
-    topicsData[currentTopic].posts.push({
-      owner: u.name, author: `${u.name} [${u.role}]`, ava: u.ava || '', bio: u.bio || '', text: text, status: st
-    });
-    document.getElementById('postText').value = '';
-    document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
-    renderPosts();
-    saveAll();
-  }
-
-  renderUser();
-  syncFromCloud();
-  setInterval(syncFromCloud, 4000);
-</script>
-</body>
-</html>
