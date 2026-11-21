@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v4.1 Cloud)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.2 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -85,7 +85,7 @@
     .term-tip { position: relative; color: #a8071a; font-weight: bold; border-bottom: 1px dotted #a8071a; cursor: help; }
     .term-tip .tip-box { visibility: hidden; width: 210px; background: #ffffe1; color: #000; border: 1px solid #000; font-weight: normal; padding: 5px; position: absolute; z-index: 50; bottom: 125%; left: 0; }
     .term-tip:hover .tip-box { visibility: visible; }
-    textarea, input[type="text"], input[type="email"], input[type="password"] { border: 1px solid #7f9db9; padding: 3px 5px; font-family: Tahoma, sans-serif; font-size: 11px; }
+    textarea, select, input[type="text"], input[type="email"], input[type="password"] { border: 1px solid #7f9db9; padding: 3px 5px; font-family: Tahoma, sans-serif; font-size: 11px; background: #fff; }
     textarea { width: 96%; height: 60px; }
     input:disabled { background: #dcdad0; }
     .pm-grid { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -103,14 +103,14 @@
     .warn-label { display: block; padding: 5px; background: #ffecec; border: 1px solid #a8071a; color: #800000; margin: 6px 0; }
     .sub-panel { display: none; margin-top: 4px; padding: 5px; background: #e1e8d5; border: 1px dashed #59752d; }
     .form-row { margin-bottom: 7px; }
-    .form-row input[type="text"], .form-row input[type="email"], .form-row input[type="password"] { width: 94%; }
+    .form-row input[type="text"], .form-row input[type="email"], .form-row input[type="password"], .form-row select { width: 94%; }
   </style>
 </head>
 <body>
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.1 Cloud]</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.2 Cloud]</h1>
       <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
@@ -136,7 +136,7 @@
       <thead>
         <tr>
           <th style="width: 38%;">Мониторинг серверов</th>
-          <th style="width: 24%;">IP-адрес</th>
+          <th style="width: 24%;">IP / Адрес</th>
           <th style="width: 16%; text-align: center;">Игроки</th>
           <th style="width: 22%; text-align: center;">Пинг / Статус</th>
         </tr>
@@ -278,12 +278,16 @@
       <span style="cursor:pointer;" onclick="closeServerModal()">[X]</span>
     </div>
     <form id="createServerForm" style="margin-top:8px;">
-      <div class="form-row"><b>Название сервера:</b><br><input type="text" id="srvName" placeholder="GamePasta Jailbreak #1" required></div>
-      <div class="form-row"><b>IP и порт:</b><br><input type="text" id="srvIp" placeholder="192.168.0.1:27015" required></div>
-      <div class="form-row"><b>Макс. слотов (игроков):</b><br><input type="text" id="srvMax" value="32" required></div>
       <div class="form-row">
-        <label><input type="checkbox" id="srvRunningCheck"> Сервер запущен прямо сейчас (без галочки будет No running)</label>
+        <b>Тип игры:</b><br>
+        <select id="srvType">
+          <option value="mc">Minecraft (Aternos / Домен / IP)</option>
+          <option value="web">CS:S / Веб-проверка</option>
+        </select>
       </div>
+      <div class="form-row"><b>Название сервера:</b><br><input type="text" id="srvName" placeholder="Наш Серверок Minecraft" required></div>
+      <div class="form-row"><b>IP или адрес:</b><br><input type="text" id="srvIp" placeholder="nashserverok123.aternos.me" required></div>
+      <div class="form-row"><b>Макс. слотов (игроков):</b><br><input type="text" id="srvMax" value="20" required></div>
       <button type="submit" class="btn-small" style="width:100%;">Добавить сервер</button>
     </form>
   </div>
@@ -361,7 +365,7 @@
   const defaultTopics = {
     news: {
       title: 'Новости',
-      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru! Добавлен мониторинг серверов!', status: '' }]
+      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru! Подключён мониторинг Minecraft!', status: '' }]
     },
     rules: {
       title: 'Правила',
@@ -398,9 +402,53 @@
   let socialCache = {};
   let bansCache = { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
   let serversCache = [
-    { name: 'GamePasta.ru :: CS:S Jailbreak [Тюрьма]', ip: 'Скоро запуск', max: '32', running: false },
-    { name: 'GamePasta.ru :: Minecraft Survival', ip: 'Скоро запуск', max: '50', running: false }
+    { type: 'mc', name: 'GamePasta :: Minecraft Server', ip: 'nashserverok123.aternos.me', max: '20' },
+    { type: 'web', name: 'GamePasta :: CS:S Jailbreak', ip: 'Скоро запуск', max: '32' }
   ];
+  let serversStatus = {};
+
+  async function checkServersPing() {
+    for (let i = 0; i < serversCache.length; i++) {
+      const s = serversCache[i];
+      if (!s.ip || s.ip === 'Скоро запуск') {
+        serversStatus[i] = { online: false };
+        continue;
+      }
+      const start = Date.now();
+      if (s.type === 'mc' || s.ip.includes('aternos.me')) {
+        try {
+          const res = await fetch('https://mcsrvstat.us' + encodeURIComponent(s.ip));
+          const info = await res.json();
+          const ping = Date.now() - start;
+          if (info && info.online) {
+            serversStatus[i] = {
+              online: true,
+              ms: ping,
+              now: info.players ? info.players.online : 0,
+              max: info.players ? info.players.max : s.max
+            };
+          } else {
+            serversStatus[i] = { online: false };
+          }
+        } catch (e) {
+          serversStatus[i] = { online: false };
+        }
+      } else {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 2000);
+        try {
+          await fetch('http://' + s.ip, { mode: 'no-cors', signal: ctrl.signal });
+          clearTimeout(timer);
+          serversStatus[i] = { online: true, ms: Date.now() - start, now: 0, max: s.max };
+        } catch (e) {
+          clearTimeout(timer);
+          serversStatus[i] = { online: false };
+        }
+      }
+    }
+    renderServers();
+  }
+
   async function syncFromCloud() {
     if (isSaving) return;
     try {
@@ -422,7 +470,7 @@
         }
       }
       renderHomeTopics();
-      renderServers();
+      checkServersPing();
       if (currentTopic && topicsData[currentTopic]) renderPosts();
       if (activeFriend) renderChat();
       if (document.getElementById('cabinetView').style.display === 'block') {
@@ -470,19 +518,17 @@
     }
 
     tbody.innerHTML = serversCache.map((s, idx) => {
-      const pingText = s.running
-        ? `<span style="color:#274e13; font-weight:bold;">Online (${18 + idx * 6} ms)</span>`
+      const st = serversStatus[idx];
+      const isUp = st && st.online;
+      const pingText = isUp
+        ? `<span style="color:#274e13; font-weight:bold;">Online (${st.ms} ms)</span>`
         : `<span style="color:#a8071a; font-weight:bold;">No running</span>`;
-      const players = s.running ? `1/${s.max}` : `0/${s.max}`;
-      let controls = '';
-      if (u && u.isMod) {
-        controls = ` <button class="logout-btn" style="padding:1px 4px; font-size:9px;" onclick="toggleServerStatus(${idx})">Вкл/Выкл</button>` +
-          `<button class="del-btn" onclick="deleteServer(${idx})">[X]</button>`;
-      }
+      const players = isUp ? `${st.now}/${st.max}` : `0/${s.max}`;
+      const delBtn = (u && u.isMod) ? `<button class="del-btn" onclick="deleteServer(${idx})">[X]</button>` : '';
       return `<tr class="topic-row"><td><b>${s.name}</b></td>` +
         `<td style="font-family:monospace;">${s.ip}</td>` +
         `<td style="text-align:center;">${players}</td>` +
-        `<td style="text-align:center;">${pingText}${controls}</td></tr>`;
+        `<td style="text-align:center;">${pingText}${delBtn}</td></tr>`;
     }).join('');
   }
 
@@ -494,23 +540,17 @@
     const u = getUser();
     if (!u || !u.isMod) return;
     serversCache.push({
+      type: document.getElementById('srvType').value,
       name: document.getElementById('srvName').value.trim(),
       ip: document.getElementById('srvIp').value.trim(),
-      max: document.getElementById('srvMax').value.trim() || '32',
-      running: document.getElementById('srvRunningCheck').checked
+      max: document.getElementById('srvMax').value.trim() || '20'
     });
     document.getElementById('srvName').value = '';
     document.getElementById('srvIp').value = '';
     closeServerModal();
-    renderServers();
+    checkServersPing();
     await saveAll();
   });
-
-  async function toggleServerStatus(idx) {
-    serversCache[idx].running = !serversCache[idx].running;
-    renderServers();
-    await saveAll();
-  }
 
   async function deleteServer(idx) {
     serversCache.splice(idx, 1);
@@ -617,7 +657,7 @@
   }
 
   function uploadAvatar(event) {
-    const file = event.target.files;
+    const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -1054,7 +1094,7 @@
 
   renderUser();
   syncFromCloud();
-  setInterval(syncFromCloud, 3000);
+  setInterval(syncFromCloud, 4000);
 </script>
 </body>
 </html>
