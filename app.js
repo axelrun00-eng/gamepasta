@@ -1,4 +1,4 @@
-const CLOUD_URL = 'https://api.npoint.io/05f19e22a3e6eba1aa58';
+const CLOUD_URL = 'https://npoint.io';
 
 function applySiteTheme(mode) {
   const isMod = (mode === 'modernic');
@@ -643,40 +643,51 @@ async function addFriend() {
   const inp = document.getElementById('newFriendInput');
   const raw = inp.value.trim();
   if (!raw) return;
-  await syncFromCloud();
   const me = getUser();
-  if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('friendStatusMsg', 'Нельзя добавить себя', true); return; }
-  const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
-  if (!found) { setStatusText('friendStatusMsg', 'Не найдено', true); return; }
+  if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+    setStatusText('friendStatusMsg', 'Нельзя добавить себя', true);
+    return;
+  }
+  const existing = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
+  const friendName = existing || raw;
+  if (!existing) usersCache.push(friendName);
+
   const list = getFriends();
-  if (!list.includes(found)) {
-    list.push(found);
+  if (!list.some(x => x.toLowerCase() === friendName.toLowerCase())) {
+    list.push(friendName);
     inp.value = '';
     renderFriends();
-    setStatusText('friendStatusMsg', `Добавлен: ${found}`, false);
+    setStatusText('friendStatusMsg', `Добавлен: ${friendName}`, false);
     await saveSocialData(list, getFoes());
-  } else inp.value = '';
+  } else {
+    inp.value = '';
+    setStatusText('friendStatusMsg', 'Уже в друзьях', true);
+  }
 }
 
 async function addFoe() {
   const inp = document.getElementById('newFoeInput');
   const raw = inp.value.trim();
   if (!raw) return;
-  await syncFromCloud();
   const me = getUser();
-  if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('foeStatusMsg', 'Нельзя добавить себя', true); return; }
-  const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
-  if (!found) { setStatusText('foeStatusMsg', 'Не найдено', true); return; }
+  if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+    setStatusText('foeStatusMsg', 'Нельзя добавить себя', true);
+    return;
+  }
+  const existing = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
+  const foeName = existing || raw;
   const foes = getFoes();
-  if (!foes.includes(found)) {
-    foes.push(found);
-    const newFriends = getFriends().filter(x => x !== found);
+  if (!foes.some(x => x.toLowerCase() === foeName.toLowerCase())) {
+    foes.push(foeName);
+    const newFriends = getFriends().filter(x => x.toLowerCase() !== foeName.toLowerCase());
     inp.value = '';
     renderFriends();
     renderFoes();
-    setStatusText('foeStatusMsg', `В ЧС: ${found}`, false);
+    setStatusText('foeStatusMsg', `В ЧС: ${foeName}`, false);
     await saveSocialData(newFriends, foes);
-  } else inp.value = '';
+  } else {
+    inp.value = '';
+  }
 }
 async function delFriend(idx) {
   const list = getFriends();
