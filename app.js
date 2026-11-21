@@ -1,14 +1,5 @@
-const GH_OWNER = 'axelrun00-eng';
-const GH_REPO = 'gamepasta';
-const GH_FILE = 'db.json';
-const GH_TOKEN = atob('Z2hwX2xLR2tOQzI0Vmw4czZtaFF6enhHWUs4TmpLZWEzRzFMVVM5Yg==');
-const GH_API_URL = `https://github.com{GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
-const GH_HEADERS = {
-  'Authorization': 'token ' + GH_TOKEN,
-  'Accept': 'application/vnd.github+json'
-};
-
-let lastFileSha = '';
+const NTFY_TOPIC = 'gamepasta_sync_axelrun00_v1';
+const NTFY_URL = 'https://ntfy.sh' + NTFY_TOPIC;
 
 function applySiteTheme(mode) {
   const isMod = (mode === 'modernic');
@@ -17,8 +8,8 @@ function applySiteTheme(mode) {
   const sub = document.getElementById('themeSubtitle');
   if (btn) btn.textContent = isMod ? '[ Стиль: Modernic ]' : '[ Стиль: OldSchool ]';
   if (sub) sub.textContent = isMod
-    ? 'Modernic Dark Gaming Edition • GitHub Cloud Sync'
-    : 'Windows XP Olive Edition • GitHub Cloud Sync';
+    ? 'Modernic Dark Gaming Edition • Live Sync'
+    : 'Windows XP Olive Edition • Live Sync';
 }
 
 function toggleSiteTheme() {
@@ -39,6 +30,7 @@ const DEFAULT_AVA =
 let currentTopic = '';
 let activeFriend = '';
 let isSaving = false;
+let lastSyncTs = 0;
 
 const defaultTopics = {
   news: {
@@ -93,11 +85,13 @@ if (localBackup) {
     if (b.social) socialCache = b.social;
     if (b.bans) bansCache = b.bans;
     if (Array.isArray(b.servers)) serversCache = b.servers;
+    if (b.ts) lastSyncTs = b.ts;
   } catch (e) {}
 }
 
 function saveLocalBackup() {
   localStorage.setItem('gp_cloud_backup_v4', JSON.stringify({
+    ts: lastSyncTs,
     topics: topicsData,
     keys: keysCache,
     pms: pmsCache,
@@ -107,14 +101,6 @@ function saveLocalBackup() {
     servers: serversCache
   }));
 }
-function utf8ToB64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-function b64ToUtf8(b64) {
-  return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
-}
-
 async function checkOneMcServer(ipRaw) {
   const clean = ipRaw.trim();
   const start = Date.now();
@@ -184,35 +170,46 @@ async function forceSyncNow() {
 async function syncFromCloud() {
   if (isSaving) return;
   try {
-    const res = await fetch(GH_API_URL + '?t=' + Date.now(), { headers: GH_HEADERS });
-    if (res.status === 404) {
-      await saveAll();
-      return;
-    }
+    const res = await fetch(NTFY_URL + '/json?poll=1&since=12h');
     if (!res.ok) {
       setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
       return;
     }
-    const meta = await res.json();
+    const rawText = await res.text();
     if (isSaving) return;
-    if (meta && meta.sha) lastFileSha = meta.sha;
-    if (meta && meta.content) {
-      const rawText = b64ToUtf8(meta.content).trim();
-      const d = rawText ? JSON.parse(rawText) : {};
-      if (d && d.topics) {
-        topicsData = d.topics;
-        if (d.keys) keysCache = d.keys;
-        if (d.pms) pmsCache = d.pms;
-        if (d.users) usersCache = d.users;
-        if (d.social) socialCache = d.social;
-        if (d.bans) bansCache = d.bans;
-        if (Array.isArray(d.servers)) serversCache = d.servers;
-        saveLocalBackup();
-        setCloudBadge('[ Облако: OK ]');
-      } else {
-        await saveAll();
-      }
+    const lines = rawText.trim().split('\n').filter(Boolean);
+    let latestState = null;
+
+    for (let i = lines.length - 1; i >= 0; i--) {
+      try {
+        const packet = JSON.parse(lines.at(i));
+        if (packet && packet.message) {
+          const parsed = JSON.parse(packet.message);
+          if (parsed && parsed.topics) {
+            latestState = parsed;
+            break;
+          }
+        }
+      } catch (e) {}
     }
+
+    if (latestState && (!latestState.ts || latestState.ts >= lastSyncTs)) {
+      lastSyncTs = latestState.ts || Date.now();
+      topicsData = latestState.topics;
+      if (latestState.keys) keysCache = latestState.keys;
+      if (latestState.pms) pmsCache = latestState.pms;
+      if (latestState.users) usersCache = latestState.users;
+      if (latestState.social) socialCache = latestState.social;
+      if (latestState.bans) bansCache = latestState.bans;
+      if (Array.isArray(latestState.servers)) serversCache = latestState.servers;
+      saveLocalBackup();
+      setCloudBadge('[ Облако: OK ]');
+    } else if (!latestState) {
+      await saveAll();
+    } else {
+      setCloudBadge('[ Облако: OK ]');
+    }
+
     renderHomeTopics();
     checkServersPing();
     if (currentTopic && topicsData[currentTopic]) renderPosts();
@@ -227,45 +224,24 @@ async function syncFromCloud() {
 }
 
 async function saveAll() {
+  lastSyncTs = Date.now();
   saveLocalBackup();
   isSaving = true;
   try {
-    if (!lastFileSha) {
-      const check = await fetch(GH_API_URL + '?t=' + Date.now(), { headers: GH_HEADERS });
-      if (check.ok) {
-        const m = await check.json();
-        if (m && m.sha) lastFileSha = m.sha;
-      }
-    }
-    const payloadStr = JSON.stringify({
-      topics: topicsData,
-      keys: keysCache,
-      pms: pmsCache,
-      users: usersCache,
-      social: socialCache,
-      bans: bansCache,
-      servers: serversCache
-    }, null, 2);
-
-    const bodyObj = {
-      message: 'Sync GamePasta DB',
-      content: utf8ToB64(payloadStr)
-    };
-    if (lastFileSha) bodyObj.sha = lastFileSha;
-
-    const res = await fetch(GH_API_URL, {
-      method: 'PUT',
-      headers: { ...GH_HEADERS, 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyObj)
+    const res = await fetch(NTFY_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        ts: lastSyncTs,
+        topics: topicsData,
+        keys: keysCache,
+        pms: pmsCache,
+        users: usersCache,
+        social: socialCache,
+        bans: bansCache,
+        servers: serversCache
+      })
     });
-    if (res.ok) {
-      const out = await res.json();
-      if (out && out.content && out.content.sha) lastFileSha = out.content.sha;
-      setCloudBadge('[ Облако: Сохранено ]');
-    } else {
-      lastFileSha = '';
-      setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
-    }
+    setCloudBadge(res.ok ? '[ Облако: Сохранено ]' : '[ Облако: Ошибка ' + res.status + ' ]');
   } catch (e) {
     setCloudBadge('[ Облако: Ошибка сети ]');
   }
