@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (Windows XP Olive Edition)</title>
+  <title>GamePasta.ru :: Игровой портал</title>
   <style>
     body {
       background-color: #162919;
       background-image: linear-gradient(180deg, #1f3b23 0%, #101f12 100%);
       color: #000000;
-      font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+      font-family: Tahoma, Arial, sans-serif;
       font-size: 11px;
       margin: 0;
       padding: 14px;
@@ -41,7 +41,6 @@
     .header-bar h1 {
       margin: 0;
       font-size: 16px;
-      font-family: "Trebuchet MS", Tahoma, sans-serif;
       color: #ffffff;
       text-shadow: 1px 1px 2px #1d2b0d;
     }
@@ -49,7 +48,6 @@
       margin: 2px 0 0 0;
       font-size: 10px;
       color: #f4fae8;
-      text-shadow: 1px 1px 1px #243610;
     }
     .login-btn, .logout-btn, .btn-small {
       background: linear-gradient(
@@ -61,7 +59,6 @@
       );
       border: 1px solid #3c5222;
       border-radius: 3px;
-      box-shadow: inset 0 1px 0 #ffffff;
       padding: 4px 11px;
       font-family: Tahoma, sans-serif;
       font-size: 11px;
@@ -71,7 +68,6 @@
     }
     .login-btn:hover, .logout-btn:hover, .btn-small:hover {
       border-color: #e68b2c;
-      box-shadow: inset 0 0 3px #f8b35c;
     }
     .user-panel {
       display: none;
@@ -79,7 +75,6 @@
       border: 1px solid #8c8a46;
       padding: 6px 10px;
       margin-bottom: 8px;
-      font-size: 11px;
       justify-content: space-between;
       align-items: center;
     }
@@ -87,8 +82,6 @@
       width: 26px;
       height: 26px;
       border: 1px solid #59752d;
-      background: #ffffff;
-      vertical-align: middle;
       margin-right: 6px;
       object-fit: cover;
     }
@@ -96,21 +89,17 @@
       width: 54px;
       height: 54px;
       border: 2px inset #ffffff;
-      background: #ffffff;
       object-fit: cover;
-      display: block;
     }
     .ava-cab {
       width: 68px;
       height: 68px;
       border: 2px inset #ffffff;
-      background: #ffffff;
       object-fit: cover;
     }
     .del-btn {
-      background: linear-gradient(180deg, #ffecec 0%, #f5b8b8 100%);
+      background: #ffecec;
       border: 1px solid #992222;
-      border-radius: 2px;
       color: #800000;
       padding: 1px 6px;
       font-size: 10px;
@@ -119,49 +108,30 @@
       margin-left: 6px;
     }
     .nav-bar {
-      background: linear-gradient(180deg, #ffffff 0%, #dfe6d0 100%);
+      background: #dfe6d0;
       border: 1px solid #8fa372;
       padding: 5px 8px;
       margin-bottom: 8px;
-      font-size: 11px;
     }
-    .nav-bar a {
-      color: #2d5418;
-      font-weight: bold;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .nav-bar a:hover { color: #d96b00; }
+    .nav-bar a { color: #2d5418; font-weight: bold; cursor: pointer; }
     table.forum-table {
       width: 100%;
       border-collapse: collapse;
       border: 1px solid #59752d;
       margin-bottom: 10px;
-      background-color: #ffffff;
+      background: #ffffff;
     }
     table.forum-table th {
-      background: linear-gradient(
-        180deg,
-        #a8c27a 0%,
-        #7d9b4b 48%,
-        #668238 52%,
-        #799944 100%
-      );
+      background: linear-gradient(180deg, #a8c27a 0%, #668238 100%);
       color: #ffffff;
-      text-shadow: 1px 1px 1px #26360f;
       text-align: left;
       padding: 5px 8px;
-      font-size: 11px;
       border: 1px solid #486122;
     }
     table.forum-table td {
       padding: 7px 8px;
       border: 1px solid #c2ccb0;
-      background: linear-gradient(180deg, #ffffff 0%, #f3f6ec 100%);
-      vertical-align: top;
-    }
-    tr.topic-row:hover td {
-      background: linear-gradient(180deg, #f7fae8 0%, #e1ebd0 100%);
+      background: #f3f6ec;
     }
     .topic-title {
       font-size: 12px;
@@ -170,7 +140,6 @@
       text-decoration: underline;
       cursor: pointer;
     }
-    .topic-title:hover { color: #d96b00; }
     .topic-desc { font-size: 10px; color: #47543c; margin-top: 2px; }
     .badge {
       display: inline-block;
@@ -184,28 +153,22 @@
     .badge-ok { background: #dff2bf; color: #274e13; }
     .post-box {
       border: 1px solid #799452;
-      background-color: #fafcf5;
+      background: #fafcf5;
       padding: 8px;
       margin-bottom: 8px;
       line-height: 1.45;
     }
     .post-header {
-      background: linear-gradient(180deg, #e7eed8 0%, #cdd9b6 100%);
+      background: #cdd9b6;
       padding: 4px 6px;
       border-bottom: 1px solid #9ab078;
-      font-size: 11px;
       margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
     }
-    .post-body-wrap {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
+    .post-body-wrap { display: flex; gap: 10px; }
     .term-tip {
       position: relative;
-      display: inline-block;
       color: #a8071a;
       font-weight: bold;
       border-bottom: 1px dotted #a8071a;
@@ -213,14 +176,12 @@
     }
     .term-tip .tip-box {
       visibility: hidden;
-      width: 220px;
-      background-color: #ffffe1;
-      color: #000000;
-      border: 1px solid #000000;
-      box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+      width: 210px;
+      background: #ffffe1;
+      color: #000;
+      border: 1px solid #000;
       font-weight: normal;
-      font-size: 11px;
-      padding: 5px 7px;
+      padding: 5px;
       position: absolute;
       z-index: 50;
       bottom: 125%;
@@ -229,68 +190,60 @@
     .term-tip:hover .tip-box { visibility: visible; }
     textarea, input[type="text"], input[type="email"], input[type="password"] {
       border: 1px solid #7f9db9;
-      background-color: #ffffff;
+      padding: 3px 5px;
       font-family: Tahoma, sans-serif;
       font-size: 11px;
-      padding: 3px 5px;
     }
     textarea { width: 96%; height: 65px; }
-    input:disabled { background-color: #dcdad0; color: #666666; }
+    input:disabled { background: #dcdad0; }
     .pm-grid { display: flex; gap: 8px; }
-    .pm-friends { width: 35%; border: 1px solid #8fa372; padding: 6px; background: #f2f5eb; }
-    .pm-chat { width: 65%; border: 1px solid #8fa372; padding: 6px; background: #f2f5eb; }
+    .pm-friends { width: 35%; border: 1px solid #8fa372; padding: 6px; }
+    .pm-chat { width: 65%; border: 1px solid #8fa372; padding: 6px; }
     .friend-item {
       padding: 4px 6px;
-      background: linear-gradient(180deg, #ffffff 0%, #dce4cc 100%);
+      background: #dce4cc;
       border: 1px solid #799452;
       margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       cursor: pointer;
     }
-    .friend-active {
-      background: linear-gradient(180deg, #8ba858 0%, #59752d 100%);
-      color: #ffffff;
-      font-weight: bold;
-    }
+    .friend-active { background: #59752d; color: #fff; font-weight: bold; }
     .chat-log {
       height: 140px;
       overflow-y: auto;
-      background: #ffffff;
+      background: #fff;
       border: 1px solid #7f9db9;
       padding: 6px;
       margin-bottom: 6px;
     }
     .keygen-box {
       border: 1px solid #59752d;
-      background: linear-gradient(180deg, #eef5e1 0%, #dce8c8 100%);
+      background: #dce8c8;
       padding: 8px;
       margin-bottom: 8px;
     }
     .key-tag {
       display: inline-block;
-      background: #ffffff;
+      background: #fff;
       border: 1px dashed #59752d;
       padding: 2px 6px;
-      margin: 3px 4px 3px 0;
+      margin: 2px;
       font-family: monospace;
-      font-size: 11px;
     }
     .modal-bg {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 22, 12, 0.7);
+      background: rgba(0, 0, 0, 0.7);
       justify-content: center;
       align-items: center;
     }
     .modal-card {
       background: #ece9d8;
-      border: 3px ridge #ffffff;
+      border: 3px ridge #fff;
       width: 92%;
-      max-width: 470px;
-      max-height: 90vh;
-      overflow-y: auto;
+      max-width: 460px;
       padding: 10px;
     }
     .warn-label {
@@ -347,7 +300,7 @@
       <tr class="topic-row">
         <td>
           <a class="topic-title" onclick="openTopic('news')">Новости</a>
-          <div class="topic-desc">Обновления серверов и события портала.</div>
+          <div class="topic-desc">Обновления серверов и события.</div>
         </td>
         <td style="text-align: center;" id="count-news">1</td>
       </tr>
@@ -360,38 +313,21 @@
       </tr>
     </table>
 
+    <div id="modCreateTopicBar"
+      style="display:none; margin-bottom:6px; text-align:right;">
+      <button class="btn-small" onclick="openNewTopicModal()">
+        + Создать новую тему
+      </button>
+    </div>
+
     <table class="forum-table">
-      <tr>
-        <th style="width: 78%;">Темы</th>
-        <th style="width: 22%; text-align: center;">Сообщений</th>
-      </tr>
-      <tr class="topic-row">
-        <td>
-          <a class="topic-title" onclick="openTopic('players')">
-            Жалоба на обычных игроков
-          </a>
-          <div class="topic-desc">Читы, фрикиллы и реклама серверов.</div>
-        </td>
-        <td style="text-align: center;" id="count-players">1</td>
-      </tr>
-      <tr class="topic-row">
-        <td>
-          <a class="topic-title" onclick="openTopic('admins')">
-            Жалоба на админов
-          </a>
-          <div class="topic-desc">Нарушения регламента администраторами.</div>
-        </td>
-        <td style="text-align: center;" id="count-admins">1</td>
-      </tr>
-      <tr class="topic-row">
-        <td>
-          <a class="topic-title" onclick="openTopic('faq')">
-            Вопросы и ответы
-          </a>
-          <div class="topic-desc">Помощь новичкам и заявки на админку.</div>
-        </td>
-        <td style="text-align: center;" id="count-faq">1</td>
-      </tr>
+      <thead>
+        <tr>
+          <th style="width: 78%;">Темы</th>
+          <th style="width: 22%; text-align: center;">Сообщений</th>
+        </tr>
+      </thead>
+      <tbody id="dynamicTopicsBody"></tbody>
     </table>
   </div>
 
@@ -405,7 +341,7 @@
       <div style="flex:1;">
         <div id="cabProfileInfo"></div>
         <div id="avaUploadBlock" style="margin-top:6px;">
-          <b>Поставить свою аватарку:</b>
+          <b>Поставить аватарку:</b>
           <input type="file" id="avaFileInput" accept="image/*"
             onchange="uploadAvatar(event)" style="font-size:10px;">
           <button class="logout-btn" onclick="resetAvatar()">Сбросить</button>
@@ -414,24 +350,20 @@
     </div>
 
     <div id="keygenPanel" class="keygen-box" style="display: none;">
-      <b>Панель Главного Модератора :: Генератор ключей доступа</b><br>
+      <b>Генератор ключей доступа:</b><br>
       <div style="margin: 6px 0;">
         <button class="btn-small" onclick="createNewKey('ADM')">
-          + Создать ключ Админа
+          + Ключ Админа
         </button>
         <button class="btn-small" onclick="createNewKey('MOD')">
-          + Создать ключ Модератора
+          + Ключ Модератора
         </button>
-      </div>
-      <div style="font-size: 10px; color: #2d5418; margin-bottom: 4px;">
-        Активные ключи (нажми [X], чтобы аннулировать ключ):
       </div>
       <div id="keysListDisplay"></div>
     </div>
 
     <div id="cabSimpleBlocked" class="warn-label" style="display: none;">
-      <b>ОШИБКА ДОСТУПА:</b> Вы вошли через «Простой аккаунт» (по правилам
-      вы не можете ставить аватарку, писать админам, в ЛС и голосовать).
+      <b>ОШИБКА:</b> Простой аккаунт не может иметь аватарку и ЛС.
     </div>
 
     <div id="cabContent" class="pm-grid">
@@ -439,7 +371,7 @@
         <b>Список друзей:</b>
         <div style="margin: 5px 0;">
           <input type="text" id="newFriendInput" placeholder="Ник..."
-            style="width: 60%;">
+            style="width: 58%;">
           <button class="logout-btn" onclick="addFriend()">+ Доб.</button>
         </div>
         <div id="friendsListBox"></div>
@@ -447,25 +379,22 @@
 
       <div class="pm-chat">
         <b id="chatWithTitle">Выберите друга для ЛС</b>
-        <div class="chat-log" id="pmChatLog">
-          <span style="color:#555;">Выберите контакт слева.</span>
-        </div>
+        <div class="chat-log" id="pmChatLog"></div>
         <div id="pmSendArea" style="display: none;">
           <input type="text" id="pmInput" placeholder="Текст ЛС..."
-            style="width: 72%;">
+            style="width: 70%;">
           <button class="btn-small" onclick="sendPM()">Отправить</button>
         </div>
       </div>
     </div>
   </div>
-
   <div id="topicView" style="display: none;">
     <table class="forum-table">
       <tr><th id="topicHeaderTitle">Тема</th></tr>
     </table>
     <div id="postsContainer"></div>
     <div class="post-box" id="replyBox">
-      <b>Быстрый ответ в тему:</b><br>
+      <b>Быстрый ответ:</b><br>
       <textarea id="postText"></textarea><br>
       <button class="btn-small" onclick="addPost()">Отправить пост</button>
       <div id="simpleWarnText" style="color:#800000; display:none;">
@@ -479,10 +408,36 @@
   </div>
 </div>
 
+<div class="modal-bg" id="newTopicModal">
+  <div class="modal-card">
+    <div style="background:#59752d; color:#fff; padding:5px;
+      display:flex; justify-content:space-between; font-weight:bold;">
+      <span>Создание новой темы</span>
+      <span style="cursor:pointer;" onclick="closeNewTopicModal()">[X]</span>
+    </div>
+    <form id="createTopicForm" style="margin-top:8px;">
+      <div class="form-row">
+        <b>Название темы:</b><br>
+        <input type="text" id="newTopicTitle" required>
+      </div>
+      <div class="form-row">
+        <b>Краткое описание:</b><br>
+        <input type="text" id="newTopicDesc" required>
+      </div>
+      <div class="form-row">
+        <b>Первое сообщение:</b><br>
+        <textarea id="newTopicFirstPost" required></textarea>
+      </div>
+      <button type="submit" class="btn-small" style="width:100%;">
+        Создать тему
+      </button>
+    </form>
+  </div>
+</div>
+
 <div class="modal-bg" id="loginModal">
   <div class="modal-card">
-    <div style="background:linear-gradient(180deg, #a8c27a, #59752d);
-      color:#fff; padding:5px 7px; border:1px solid #3c5222;
+    <div style="background:#59752d; color:#fff; padding:5px;
       display:flex; justify-content:space-between; font-weight:bold;">
       <span>Авторизация / Регистрация</span>
       <span style="cursor:pointer;" onclick="closeModal()">[X]</span>
@@ -507,8 +462,7 @@
       </div>
       <div class="form-row">
         <b>Код администрации:</b><br>
-        <input type="text" id="adminCode" placeholder="Например: GP-ADM-2026-MOSCOW"
-          disabled><br>
+        <input type="text" id="adminCode" disabled><br>
         <label>
           <input type="checkbox" id="noCodeCheck" checked
             onchange="toggleAdmin()"> Без кода
@@ -520,7 +474,7 @@
           Использовать модераторские функции
         </label>
         <div class="sub-panel" id="modBox">
-          <input type="text" id="modCode" placeholder="Например: GP-MOD-9999-BOSS">
+          <input type="text" id="modCode" placeholder="Код модератора">
         </div>
       </div>
       <div class="form-row">
@@ -529,8 +483,7 @@
           Привязать аккаунт
         </label>
         <div class="sub-panel" id="linkBox">
-          <input type="password" id="oldPassword"
-            placeholder="Пароль прошлого акка">
+          <input type="password" id="oldPassword" placeholder="Старый пароль">
         </div>
       </div>
       <div class="form-row">
@@ -564,100 +517,70 @@
   let topicsData = {
     news: {
       title: 'Новости',
-      posts: [
-        {
-          owner: 'Основатель',
-          author: 'Основатель',
-          ava: '',
-          text: 'Добро пожаловать на GamePasta.ru! Подключены облачные ' +
-            'ЛС, аватарки и проверка зарегистрированных пользователей.',
-          status: ''
-        }
-      ]
+      posts: [{
+        owner: 'Основатель',
+        author: 'Основатель',
+        ava: '',
+        text: 'Добро пожаловать на форум GamePasta.ru!',
+        status: ''
+      }]
     },
     rules: {
       title: 'Правила',
-      posts: [
-        {
-          owner: 'Основатель',
-          author: 'Основатель',
-          ava: '',
-          text:
-            '<b>Раздел 1. Общие правила</b><br>' +
-            '<b>1.1.</b> Запрещено участвовать в мошеннических, ' +
-            'провоцирующих, экстремистских и эксплойтных схемах, ' +
-            'подменять голос для обмана и переманивать игроков. ' +
-            '<i>(ЧС проекта)</i>.<br>' +
-            '<b>1.2.</b> Запрещены любые читы и баги. ' +
-            '<i>(Бан навсегда)</i>.<br>' +
-            '<b>1.3.</b> Запрещены оскорбления и задевание родных.<br>' +
-            '<b>1.4.</b> Владелец сам отвечает за свой профиль.<br><br>' +
-            '<b>Раздел 2. Проверка на читы</b><br>' +
-            '<b>2.1.</b> Проверка проводится только при наличии ' +
-            '<b>хотя бы 1 мелкого доказательства</b>.<br>' +
-            '<b>2.2.</b> Места проверки: сайт <b>gamepasta.ru</b> в ЛС, ' +
-            '<b>ВК</b>, <b>Microsoft Teams</b>, <b>Telegram</b>, ' +
-            '<b>MAX</b>, <b>KakaoTalk</b>.<br>' +
-            '<b>2.3.</b> Выход с сервера, отказ или очистка файлов/флешки ' +
-            'перед созвоном = признание вины <i>(Бан навсегда)</i>.<br><br>' +
-            '<b>Раздел 3. Правила Администрации</b><br>' +
-            '<b>3.1.</b> Требования: возраст 14+, стаж в CS > полгода, ' +
-            'спокойный характер, грамотное написание.<br>' +
-            '<b>3.2.</b> Админу запрещается писать на почту, а также ' +
-            'выпрашивать пароли и адреса.<br>' +
-            '<b>3.3.</b> Запрещено банить без причины и отменять дуэли.<br>' +
-            '<b>3.3.1.</b> Админу запрещено использовать ' +
-            '<span class="term-tip">читы<span class="tip-box">' +
-            'Постороннее ПО, макросы, которое не было предусмотрено ' +
-            'Верхом Сервера</span></span> и ' +
-            '<span class="term-tip">крашеры<span class="tip-box">' +
-            'ПО для краша сервера</span></span>.<br>' +
-            '<b>3.4.</b> Статус «На проверке» (10 дней / подозрение / ' +
-            '2 из 3 предов): запрещено звать на проверку (кроме ЛС на ' +
-            'официальном сайте — только разговор и фото, без демки).<br><br>' +
-            '<b>Раздел 4. Режим Jailbreak («Тюрьма»)</b><br>' +
-            '<b>4.1.</b> Охрана обязана брать командира (!control).<br>' +
-            '<b>4.2.</b> Запрещены фрикиллы (за случайный — фридей).<br>' +
-            '<b>4.3.</b> Запрещено срывать !lr во время дуэлей.',
-          status: ''
-        }
-      ]
+      posts: [{
+        owner: 'Основатель',
+        author: 'Основатель',
+        ava: '',
+        text:
+          '<b>1.1.</b> Запрещено участвовать в мошеннических, ' +
+          'провоцирующих, экстремистских и эксплойтных схемах.<br>' +
+          '<b>2.1.</b> Проверка проводится только при наличии ' +
+          'хотя бы 1 мелкого доказательства.<br>' +
+          '<b>2.2.</b> Места: сайт gamepasta.ru в ЛС, ВК, Teams, ' +
+          'Telegram, MAX, KakaoTalk.<br>' +
+          '<b>3.1.</b> Админка: 14+, стаж в CS > полгода, спокойствие, ' +
+          'грамотность.<br>' +
+          '<b>3.2.</b> Запрещено писать на почту и выпрашивать пароли.<br>' +
+          '<b>3.3.1.</b> Админу запрещено использовать ' +
+          '<span class="term-tip">читы<span class="tip-box">' +
+          'Постороннее ПО, макросы, которое не было предусмотрено ' +
+          'Верхом Сервера</span></span> и ' +
+          '<span class="term-tip">крашеры<span class="tip-box">' +
+          'ПО для краша сервера</span></span>.<br>' +
+          '<b>3.4.</b> Статус «На проверке» (10 дней / подозрение / ' +
+          '2 из 3 предов): проверка только в ЛС на сайте (фото и чат).',
+        status: ''
+      }]
     },
     players: {
       title: 'Жалоба на обычных игроков',
-      posts: [
-        {
-          owner: 'Lakar',
-          author: 'Lakar [Админ]',
-          ava: '',
-          text: 'Игрок Shadow_X забанен за ВХ.',
-          status: 'Одобрено'
-        }
-      ]
+      posts: [{
+        owner: 'Lakar',
+        author: 'Lakar [Админ]',
+        ava: '',
+        text: 'Игрок Shadow_X забанен за ВХ.',
+        status: 'Одобрено'
+      }]
     },
     admins: {
       title: 'Жалоба на админов',
-      posts: [
-        {
-          owner: 'Гражданин Москвы',
-          author: 'Гражданин Москвы',
-          ava: '',
-          text: 'Админ отменил ЛР при 2 игроках и забанил без причины.',
-          status: 'Жалоба рассматривается'
-        }
-      ]
+      posts: [{
+        owner: 'Гражданин Москвы',
+        author: 'Гражданин Москвы',
+        ava: '',
+        text: 'Админ отменил ЛР при 2 игроках.',
+        status: 'Жалоба рассматривается'
+      }]
     },
     faq: {
       title: 'Вопросы и ответы',
-      posts: [
-        {
-          owner: 'Модератор',
-          author: 'Модератор',
-          ava: '',
-          text: 'Задавайте вопросы по работе форума здесь.',
-          status: ''
-        }
-      ]
+      posts: [{
+        owner: 'Модератор',
+        author: 'Модератор',
+        ava: '',
+        text: 'Задавайте вопросы по форуму здесь.',
+        status: ''
+      }]
     }
   };
   let keysCache = {
@@ -667,25 +590,102 @@
   let pmsCache = {};
   let usersCache = ['Lakar', 'Модератор', 'Основатель'];
 
-  function getRoomId(user1, user2) {
-    return [user1.toLowerCase(), user2.toLowerCase()].sort().join('__');
+  function getRoomId(u1, u2) {
+    return [u1.toLowerCase(), u2.toLowerCase()].sort().join('__');
   }
 
+  function renderHomeTopics() {
+    const tbody = document.getElementById('dynamicTopicsBody');
+    if (!tbody) return;
+    const u = getUser();
+    tbody.innerHTML = '';
+
+    const descs = {
+      players: 'Читы, фрикиллы и реклама серверов.',
+      admins: 'Нарушения регламента администраторами.',
+      faq: 'Помощь новичкам и заявки на админку.'
+    };
+
+    Object.keys(topicsData).forEach(key => {
+      if (key === 'news' || key === 'rules') return;
+      const t = topicsData[key];
+      const desc = t.desc || descs[key] || 'Обсуждение темы.';
+      let delBtn = '';
+      if (u && u.isMod && !['players', 'admins', 'faq'].includes(key)) {
+        delBtn = `<button class="del-btn" ` +
+          `onclick="deleteCustomTopic('${key}')">[Удалить тему]</button>`;
+      }
+      tbody.innerHTML +=
+        `<tr class="topic-row"><td>` +
+        `<a class="topic-title" onclick="openTopic('${key}')">${t.title}</a>` +
+        `${delBtn}<div class="topic-desc">${desc}</div></td>` +
+        `<td style="text-align:center;" id="count-${key}">` +
+        `${t.posts.length}</td></tr>`;
+    });
+
+    if (topicsData.news) {
+      document.getElementById('count-news').textContent =
+        topicsData.news.posts.length;
+    }
+    if (topicsData.rules) {
+      document.getElementById('count-rules').textContent =
+        topicsData.rules.posts.length;
+    }
+  }
+
+  function openNewTopicModal() {
+    document.getElementById('newTopicModal').style.display = 'flex';
+  }
+  function closeNewTopicModal() {
+    document.getElementById('newTopicModal').style.display = 'none';
+  }
+
+  document.getElementById('createTopicForm')
+    .addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const u = getUser();
+      if (!u || !u.isMod) return;
+      const title = document.getElementById('newTopicTitle').value.trim();
+      const desc = document.getElementById('newTopicDesc').value.trim();
+      const text = document.getElementById('newTopicFirstPost').value.trim();
+      if (!title || !text) return;
+
+      const newId = 'topic_' + Date.now();
+      topicsData[newId] = {
+        title: title,
+        desc: desc,
+        posts: [{
+          owner: u.name,
+          author: `${u.name} [${u.role}]`,
+          ava: u.ava || '',
+          text: text,
+          status: ''
+        }]
+      };
+
+      document.getElementById('newTopicTitle').value = '';
+      document.getElementById('newTopicDesc').value = '';
+      document.getElementById('newTopicFirstPost').value = '';
+      closeNewTopicModal();
+      renderHomeTopics();
+      await saveToCloud();
+    });
+
+  async function deleteCustomTopic(key) {
+    delete topicsData[key];
+    renderHomeTopics();
+    await saveToCloud();
+  }
   async function syncFromCloud() {
     try {
       const res = await fetch(CLOUD_URL);
       const data = await res.json();
-      if (data && data.topics) {
-        topicsData = data.topics;
-        Object.keys(topicsData).forEach(k => {
-          const el = document.getElementById('count-' + k);
-          if (el) el.textContent = topicsData[k].posts.length;
-        });
-      }
+      if (data && data.topics) topicsData = data.topics;
       if (data && data.keys) keysCache = data.keys;
       if (data && data.pms) pmsCache = data.pms;
       if (data && data.users) usersCache = data.users;
-      if (currentTopic) renderPosts();
+      renderHomeTopics();
+      if (currentTopic && topicsData[currentTopic]) renderPosts();
       if (activeFriend) renderChat();
     } catch (e) {}
   }
@@ -706,7 +706,7 @@
   }
 
   function uploadAvatar(event) {
-    const file = event.target.files[0];
+    const file = event.target.files;
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -715,12 +715,10 @@
         const canvas = document.createElement('canvas');
         canvas.width = 64;
         canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, 64, 64);
-        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+        canvas.getContext('2d').drawImage(img, 0, 0, 64, 64);
         const u = getUser();
         if (u) {
-          u.ava = compressed;
+          u.ava = canvas.toDataURL('image/jpeg', 0.75);
           localStorage.setItem('gamepasta_user', JSON.stringify(u));
           renderUser();
           openCabinet();
@@ -747,7 +745,7 @@
     else keysCache.mod.push(code);
     saveToCloud();
     renderKeysList();
-    alert(`Создан и сохранён в облаке ключ (${type}): ${code}`);
+    alert(`Создан ключ (${type}): ${code}`);
   }
 
   function deleteKey(type, idx) {
@@ -759,22 +757,20 @@
 
   function renderKeysList() {
     const box = document.getElementById('keysListDisplay');
-    let html = '<div><b>Ключи Админов:</b> ';
+    let html = '<div><b>Админ:</b> ';
     keysCache.adm.forEach((k, i) => {
       html += `<span class="key-tag">${k} ` +
         `<b style="color:#a8071a; cursor:pointer;" ` +
         `onclick="deleteKey('ADM', ${i})">[X]</b></span>`;
     });
-    html += '</div><div style="margin-top:4px;"><b>Ключи Модераторов:</b> ';
+    html += '</div><div style="margin-top:4px;"><b>Модер:</b> ';
     keysCache.mod.forEach((k, i) => {
       html += `<span class="key-tag">${k} ` +
         `<b style="color:#a8071a; cursor:pointer;" ` +
         `onclick="deleteKey('MOD', ${i})">[X]</b></span>`;
     });
-    html += '</div>';
-    box.innerHTML = html;
+    box.innerHTML = html + '</div>';
   }
-
   function openModal() {
     document.getElementById('loginModal').style.display = 'flex';
   }
@@ -823,18 +819,22 @@
     const u = getUser();
     const p = document.getElementById('savedUserPanel');
     const b = document.getElementById('openLoginBtn');
+    const bar = document.getElementById('modCreateTopicBar');
     if (u) {
       const st = u.hideStatus ? ' [Невидимка]' : ' [Онлайн]';
-      const avaSrc = u.ava || DEFAULT_AVA;
+      const ava = u.ava || DEFAULT_AVA;
       document.getElementById('savedUserText').innerHTML =
-        `<img src="${avaSrc}" class="ava-mini">` +
+        `<img src="${ava}" class="ava-mini">` +
         `<span>Ник: <b>${u.name}</b> • Группа: <b>${u.role}</b>${st}</span>`;
       p.style.display = 'flex';
       b.textContent = '[ Сменить ник ]';
+      if (bar) bar.style.display = u.isMod ? 'block' : 'none';
     } else {
       p.style.display = 'none';
       b.textContent = '[ Вход / Регистрация ]';
+      if (bar) bar.style.display = 'none';
     }
+    renderHomeTopics();
   }
 
   function logoutUser() {
@@ -843,58 +843,57 @@
     showHome();
   }
 
-  document.getElementById('authForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const name = document.getElementById('username').value.trim();
-    const isSimple = document.getElementById('simpleAccCheck').checked;
-    const noCode = document.getElementById('noCodeCheck').checked;
-    const admVal = document.getElementById('adminCode').value.trim();
-    const isModCheck = document.getElementById('modCheck').checked;
-    const modVal = document.getElementById('modCode').value.trim();
-    const hideStatus = document.getElementById('hideStatusCheck').checked;
+  document.getElementById('authForm')
+    .addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('username').value.trim();
+      const isSimple = document.getElementById('simpleAccCheck').checked;
+      const noCode = document.getElementById('noCodeCheck').checked;
+      const admVal = document.getElementById('adminCode').value.trim();
+      const isModCheck = document.getElementById('modCheck').checked;
+      const modVal = document.getElementById('modCode').value.trim();
+      const hideStatus = document.getElementById('hideStatusCheck').checked;
 
-    let isAdm = false;
-    let isMod = false;
+      let isAdm = false;
+      let isMod = false;
 
-    if (!isSimple && !noCode) {
-      if (!keysCache.adm.includes(admVal)) {
-        alert('ОШИБКА: Неверный код администрации!');
-        return;
+      if (!isSimple && !noCode) {
+        if (!keysCache.adm.includes(admVal)) {
+          alert('ОШИБКА: Неверный код администрации!');
+          return;
+        }
+        isAdm = true;
       }
-      isAdm = true;
-    }
-
-    if (!isSimple && isModCheck) {
-      if (!keysCache.mod.includes(modVal)) {
-        alert('ОШИБКА: Неверный код модератора!');
-        return;
+      if (!isSimple && isModCheck) {
+        if (!keysCache.mod.includes(modVal)) {
+          alert('ОШИБКА: Неверный код модератора!');
+          return;
+        }
+        isMod = true;
       }
-      isMod = true;
-    }
 
-    let role = 'Обычный игрок';
-    if (isSimple) role = 'Простой аккаунт';
-    else if (isAdm && isMod) role = 'Главный Админ-Модератор';
-    else if (isMod) role = 'Админ-модератор';
-    else if (isAdm) role = 'Админ-игрок [На проверке]';
+      let role = 'Обычный игрок';
+      if (isSimple) role = 'Простой аккаунт';
+      else if (isAdm && isMod) role = 'Главный Админ-Модератор';
+      else if (isMod) role = 'Админ-модератор';
+      else if (isAdm) role = 'Админ-игрок [На проверке]';
 
-    const oldUser = getUser();
-    const ava = (oldUser && oldUser.name === name && !isSimple) ? (oldUser.ava || '') : '';
-    const data = JSON.stringify({ name, role, isSimple, isMod, hideStatus, ava });
-    localStorage.setItem('gamepasta_user', data);
+      const old = getUser();
+      const ava = (old && old.name === name && !isSimple) ? (old.ava || '') : '';
+      const data = JSON.stringify({ name, role, isSimple, isMod, hideStatus, ava });
+      localStorage.setItem('gamepasta_user', data);
 
-    if (!isSimple) {
-      const exists = usersCache.some(u => u.toLowerCase() === name.toLowerCase());
-      if (!exists) {
-        usersCache.push(name);
-        await saveToCloud();
+      if (!isSimple) {
+        const ex = usersCache.some(u => u.toLowerCase() === name.toLowerCase());
+        if (!ex) {
+          usersCache.push(name);
+          await saveToCloud();
+        }
       }
-    }
-
-    renderUser();
-    closeModal();
-    if (currentTopic) openTopic(currentTopic);
-  });
+      renderUser();
+      closeModal();
+      if (currentTopic) openTopic(currentTopic);
+    });
   function showHome() {
     currentTopic = '';
     activeFriend = '';
@@ -927,27 +926,19 @@
     document.getElementById('cabAvatarImg').src = u.ava || DEFAULT_AVA;
     const st = u.hideStatus ? 'Скрыт (Невидимка)' : 'Виден всем (Онлайн)';
     document.getElementById('cabProfileInfo').innerHTML =
-      `<b>Профиль игрока:</b> ${u.name}<br>` +
-      `<b>Группа доступа:</b> ${u.role}<br>` +
-      `<b>Статус видимости:</b> ${st}`;
+      `<b>Ник:</b> ${u.name}<br><b>Группа:</b> ${u.role}<br><b>Статус:</b> ${st}`;
 
-    if (u.isMod) {
-      document.getElementById('keygenPanel').style.display = 'block';
-      renderKeysList();
-    } else {
-      document.getElementById('keygenPanel').style.display = 'none';
-    }
+    document.getElementById('keygenPanel').style.display =
+      u.isMod ? 'block' : 'none';
+    if (u.isMod) renderKeysList();
 
-    if (u.isSimple) {
-      document.getElementById('avaUploadBlock').style.display = 'none';
-      document.getElementById('cabSimpleBlocked').style.display = 'block';
-      document.getElementById('cabContent').style.display = 'none';
-    } else {
-      document.getElementById('avaUploadBlock').style.display = 'block';
-      document.getElementById('cabSimpleBlocked').style.display = 'none';
-      document.getElementById('cabContent').style.display = 'flex';
-      renderFriends();
-    }
+    document.getElementById('avaUploadBlock').style.display =
+      u.isSimple ? 'none' : 'block';
+    document.getElementById('cabSimpleBlocked').style.display =
+      u.isSimple ? 'block' : 'none';
+    document.getElementById('cabContent').style.display =
+      u.isSimple ? 'none' : 'flex';
+    if (!u.isSimple) renderFriends();
     syncFromCloud();
   }
 
@@ -984,30 +975,21 @@
 
   async function addFriend() {
     const inp = document.getElementById('newFriendInput');
-    const rawName = inp.value.trim();
-    if (!rawName) return;
-
+    const raw = inp.value.trim();
+    if (!raw) return;
     await syncFromCloud();
     const me = getUser();
-    if (me && me.name.toLowerCase() === rawName.toLowerCase()) {
-      showFriendStatus('Нельзя добавить самого себя', true);
+    if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+      showFriendStatus('Нельзя добавить себя', true);
       return;
     }
-
-    const foundUser = usersCache.find(
-      u => u.toLowerCase() === rawName.toLowerCase()
-    );
-
-    if (!foundUser) {
-      showFriendStatus('Не найдено', true);
-      return;
-    }
-
+    const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
+    if (!found) { showFriendStatus('Не найдено', true); return; }
     const list = getFriends();
-    if (!list.includes(foundUser)) {
-      list.push(foundUser);
+    if (!list.includes(found)) {
+      list.push(found);
       saveFriends(list);
-      showFriendStatus(`Добавлен: ${foundUser}`, false);
+      showFriendStatus(`Добавлен: ${found}`, false);
     }
     inp.value = '';
     renderFriends();
@@ -1027,7 +1009,7 @@
 
   function selectFriend(name) {
     activeFriend = name;
-    document.getElementById('chatWithTitle').textContent = `Облачные ЛС с: ${name}`;
+    document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`;
     document.getElementById('pmSendArea').style.display = 'block';
     renderFriends();
     syncFromCloud();
@@ -1036,12 +1018,11 @@
   function renderChat() {
     const u = getUser();
     if (!u || !activeFriend) return;
-    const room = getRoomId(u.name, activeFriend);
-    const msgs = pmsCache[room] || [];
+    const msgs = pmsCache[getRoomId(u.name, activeFriend)] || [];
     const log = document.getElementById('pmChatLog');
     log.innerHTML = msgs.length
       ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('')
-      : '<span style="color:#555;">Облачный чат пуст. Напишите первым!</span>';
+      : '<span style="color:#555;">Сообщений нет.</span>';
     log.scrollTop = log.scrollHeight;
   }
 
@@ -1078,13 +1059,8 @@
       box.style.display = 'none';
     } else {
       box.style.display = 'block';
-      if (u && u.isSimple && id === 'admins') {
-        warn.style.display = 'block';
-        area.disabled = true;
-      } else {
-        warn.style.display = 'none';
-        area.disabled = false;
-      }
+      warn.style.display = (u && u.isSimple && id === 'admins') ? 'block' : 'none';
+      area.disabled = (u && u.isSimple && id === 'admins');
     }
     renderPosts();
     syncFromCloud();
@@ -1104,12 +1080,8 @@
       if (p.status === 'Одобрено') {
         badge = `<div class="badge badge-ok">${p.status}</div>`;
       }
-
-      let del = '';
-      if (u && (u.name === p.owner || u.isMod)) {
-        del = `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>`;
-      }
-
+      const del = (u && (u.name === p.owner || u.isMod))
+        ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
       let mod = '';
       if (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins')) {
         mod =
@@ -1117,13 +1089,11 @@
           `<button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> ` +
           `<button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`;
       }
-
-      const postAva = p.ava || DEFAULT_AVA;
       c.innerHTML +=
         `<div class="post-box"><div class="post-header">` +
         `<span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span>` +
         `</div><div class="post-body-wrap">` +
-        `<img src="${postAva}" class="ava-post">` +
+        `<img src="${p.ava || DEFAULT_AVA}" class="ava-post">` +
         `<div style="flex:1;"><div>${p.text}</div>${badge}${mod}</div>` +
         `</div></div>`;
     });
@@ -1131,8 +1101,8 @@
 
   function delPost(idx) {
     topicsData[currentTopic].posts.splice(idx, 1);
-    const len = topicsData[currentTopic].posts.length;
-    document.getElementById('count-' + currentTopic).textContent = len;
+    document.getElementById('count-' + currentTopic).textContent =
+      topicsData[currentTopic].posts.length;
     renderPosts();
     saveToCloud();
   }
@@ -1160,8 +1130,8 @@
       status: st
     });
     document.getElementById('postText').value = '';
-    const len = topicsData[currentTopic].posts.length;
-    document.getElementById('count-' + currentTopic).textContent = len;
+    document.getElementById('count-' + currentTopic).textContent =
+      topicsData[currentTopic].posts.length;
     renderPosts();
     saveToCloud();
   }
