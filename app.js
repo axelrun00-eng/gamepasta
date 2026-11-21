@@ -4,7 +4,7 @@ const GH_FILE = 'db.json';
 const GH_TOKEN = ['ghp', 'SkJLEJiW4RwH2yNoyC5PCshwyW97LL143xWb'].join('_');
 const GH_API_URL = `https://github.com{GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
 const GH_HEADERS = {
-  'Authorization': 'Bearer ' + GH_TOKEN,
+  'Authorization': 'token ' + GH_TOKEN,
   'Accept': 'application/vnd.github+json',
   'Content-Type': 'application/json'
 };
@@ -190,11 +190,16 @@ async function syncFromCloud() {
       await saveAll();
       return;
     }
+    if (!res.ok) {
+      setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
+      return;
+    }
     const meta = await res.json();
     if (isSaving) return;
     if (meta && meta.sha) lastFileSha = meta.sha;
     if (meta && meta.content) {
-      const d = JSON.parse(b64ToUtf8(meta.content));
+      const rawText = b64ToUtf8(meta.content).trim();
+      const d = rawText ? JSON.parse(rawText) : {};
       if (d && d.topics) {
         topicsData = d.topics;
         if (d.keys) keysCache = d.keys;
@@ -260,10 +265,10 @@ async function saveAll() {
       setCloudBadge('[ Облако: Сохранено ]');
     } else {
       lastFileSha = '';
-      setCloudBadge('[ Облако: Повтор... ]');
+      setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]');
     }
   } catch (e) {
-    setCloudBadge('[ Облако: Ошибка ]');
+    setCloudBadge('[ Облако: Ошибка сети ]');
   }
   isSaving = false;
 }
