@@ -370,7 +370,6 @@
       </div>
     </div>
 
-    <!-- БАН-ЛИСТ ID И IP (ТОЛЬКО ДЛЯ АДМИНОВ И МОДЕРАТОРОВ) -->
     <div id="adminBanPanel" class="ban-box" style="display: none;">
       <b style="color:#800000;">Панель Админа/Модератора :: Заблокированные ID и IP</b>
       <div style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap;">
@@ -638,11 +637,23 @@
   };
   let pmsCache = {};
   let usersCache = ['Lakar', 'Модератор', 'Основатель'];
+  let socialCache = {};
   let bansCache = {
     ids: ['STEAM_0:0:7771337'],
     ips: ['185.12.44.90']
   };
   let isSaving = false;
+
+  const savedLocalTopics = localStorage.getItem('gamepasta_topics');
+  if (savedLocalTopics) {
+    try {
+      topicsData = JSON.parse(savedLocalTopics);
+    } catch (e) {}
+  }
+
+  function saveLocalTopics() {
+    localStorage.setItem('gamepasta_topics', JSON.stringify(topicsData));
+  }
 
   function getRoomId(u1, u2) {
     return [u1.toLowerCase(), u2.toLowerCase()].sort().join('__');
@@ -718,6 +729,7 @@
         }]
       };
 
+      saveLocalTopics();
       document.getElementById('newTopicTitle').value = '';
       document.getElementById('newTopicDesc').value = '';
       document.getElementById('newTopicFirstPost').value = '';
@@ -729,6 +741,7 @@
   async function deleteCustomTopic(key) {
     isSaving = true;
     delete topicsData[key];
+    saveLocalTopics();
     renderHomeTopics();
     await saveToCloud();
   }
@@ -740,21 +753,26 @@
       if (isSaving) return;
       if (data && data.topics && Object.keys(data.topics).length > 0) {
         topicsData = data.topics;
-      } else {
-        await saveToCloud();
+        saveLocalTopics();
       }
       if (data && data.keys) keysCache = data.keys;
       if (data && data.pms) pmsCache = data.pms;
       if (data && data.users) usersCache = data.users;
+      if (data && data.social) socialCache = data.social;
       if (data && data.bans) bansCache = data.bans;
       renderHomeTopics();
       if (currentTopic && topicsData[currentTopic]) renderPosts();
       if (activeFriend) renderChat();
+      if (document.getElementById('cabinetView').style.display === 'block') {
+        renderFriends();
+        renderFoes();
+      }
     } catch (e) {}
   }
 
   async function saveToCloud() {
     isSaving = true;
+    saveLocalTopics();
     try {
       await fetch(CLOUD_URL, {
         method: 'POST',
@@ -764,6 +782,7 @@
           keys: keysCache,
           pms: pmsCache,
           users: usersCache,
+          social: socialCache,
           bans: bansCache
         })
       });
@@ -1006,19 +1025,34 @@
     syncFromCloud();
   }
 
-  function getFriends() {
-    const f = localStorage.getItem('gamepasta_friends');
-    return f ? JSON.parse(f) : ['Lakar', 'Модератор'];
+  function getUserSocial() {
+    const u = getUser();
+    if (!u) return { friends: ['Lakar', 'Модератор'], foes: [] };
+    const key = u.name.toLowerCase();
+    if (socialCache[key]) return socialCache[key];
+    const loc = localStorage.getItem('gamepasta_soc_' + key);
+    if (loc) {
+      socialCache[key] = JSON.parse(loc);
+      return socialCache[key];
+    }
+    socialCache[key] = { friends: ['Lakar', 'Модератор'], foes: [] };
+    return socialCache[key];
   }
-  function saveFriends(arr) {
-    localStorage.setItem('gamepasta_friends', JSON.stringify(arr));
+
+  function getFriends() {
+    return getUserSocial().friends;
   }
   function getFoes() {
-    const f = localStorage.getItem('gamepasta_foes');
-    return f ? JSON.parse(f) : [];
+    return getUserSocial().foes;
   }
-  function saveFoes(arr) {
-    localStorage.setItem('gamepasta_foes', JSON.stringify(arr));
+
+  async function saveSocialData(friendsArr, foesArr) {
+    const u = getUser();
+    if (!u) return;
+    const key = u.name.toLowerCase();
+    socialCache[key] = { friends: friendsArr, foes: foesArr };
+    localStorage.setItem('gamepasta_soc_' + key, JSON.stringify(socialCache[key]));
+    await saveToCloud();
   }
 
   function saveBio() {
@@ -1075,6 +1109,7 @@
   function renderFriends() {
     const list = getFriends();
     const box = document.getElementById('friendsListBox');
+    if (!box) return;
     box.innerHTML = '';
     list.forEach((f, idx) => {
       const cls = (f === activeFriend)
@@ -1090,6 +1125,7 @@
   function renderFoes() {
     const list = getFoes();
     const box = document.getElementById('foesListBox');
+    if (!box) return;
     box.innerHTML = '';
     list.forEach((f, idx) => {
       box.innerHTML +=
@@ -1121,12 +1157,15 @@
     if (!found) { setStatusText('friendStatusMsg', 'Не найдено', true); return; }
     const list = getFriends();
     if (!list.includes(found)) {
+      isSaving = true;
       list.push(found);
-      saveFriends(list);
+      inp.value = '';
+      renderFriends();
       setStatusText('friendStatusMsg', `Добавлен: ${found}`, false);
+      await saveSocialData(list, getFoes());
+    } else {
+      inp.value = '';
     }
-    inp.value = '';
-    renderFriends();
   }
 
   async function addFoe() {
@@ -1143,16 +1182,20 @@
     if (!found) { setStatusText('foeStatusMsg', 'Не найдено', true); return; }
     const foes = getFoes();
     if (!foes.includes(found)) {
+      isSaving = true;
       foes.push(found);
-      saveFoes(foes);
-      saveFriends(getFriends().filter(x => x !== found));
+      const newFriends = getFriends().filter(x => x !== found);
+      inp.value = '';
+      renderFriends();
+      renderFoes();
       setStatusText('foeStatusMsg', `В ЧС: ${found}`, false);
+      await saveSocialData(newFriends, foes);
+    } else {
+      inp.value = '';
     }
-    inp.value = '';
-    renderFriends();
-    renderFoes();
   }
-  function delFriend(idx) {
+  async function delFriend(idx) {
+    isSaving = true;
     const list = getFriends();
     if (list[idx] === activeFriend) {
       activeFriend = '';
@@ -1160,15 +1203,16 @@
       document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
     }
     list.splice(idx, 1);
-    saveFriends(list);
     renderFriends();
+    await saveSocialData(list, getFoes());
   }
 
-  function delFoe(idx) {
+  async function delFoe(idx) {
+    isSaving = true;
     const list = getFoes();
     list.splice(idx, 1);
-    saveFoes(list);
     renderFoes();
+    await saveSocialData(getFriends(), list);
   }
 
   function selectFriend(name) {
