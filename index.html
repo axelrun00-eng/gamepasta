@@ -745,49 +745,30 @@
     renderHomeTopics();
     await saveToCloud();
   }
+  const savedKeys = localStorage.getItem('gamepasta_keys_v2');
+  if (savedKeys) keysCache = JSON.parse(savedKeys);
+
+  const savedPms = localStorage.getItem('gamepasta_pms_v2');
+  if (savedPms) pmsCache = JSON.parse(savedPms);
+
+  const savedUsers = localStorage.getItem('gamepasta_users_v2');
+  if (savedUsers) usersCache = JSON.parse(savedUsers);
+
+  const savedBans = localStorage.getItem('gamepasta_bans_v2');
+  if (savedBans) bansCache = JSON.parse(savedBans);
+
   async function syncFromCloud() {
-    if (isSaving) return;
-    try {
-      const res = await fetch(CLOUD_URL + '?t=' + Date.now());
-      const data = await res.json();
-      if (isSaving) return;
-      if (data && data.topics && Object.keys(data.topics).length > 0) {
-        topicsData = data.topics;
-        saveLocalTopics();
-      }
-      if (data && data.keys) keysCache = data.keys;
-      if (data && data.pms) pmsCache = data.pms;
-      if (data && data.users) usersCache = data.users;
-      if (data && data.social) socialCache = data.social;
-      if (data && data.bans) bansCache = data.bans;
-      renderHomeTopics();
-      if (currentTopic && topicsData[currentTopic]) renderPosts();
-      if (activeFriend) renderChat();
-      if (document.getElementById('cabinetView').style.display === 'block') {
-        renderFriends();
-        renderFoes();
-      }
-    } catch (e) {}
+    renderHomeTopics();
+    if (currentTopic && topicsData[currentTopic]) renderPosts();
+    if (activeFriend) renderChat();
   }
 
   async function saveToCloud() {
-    isSaving = true;
     saveLocalTopics();
-    try {
-      await fetch(CLOUD_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topics: topicsData,
-          keys: keysCache,
-          pms: pmsCache,
-          users: usersCache,
-          social: socialCache,
-          bans: bansCache
-        })
-      });
-    } catch (e) {}
-    isSaving = false;
+    localStorage.setItem('gamepasta_keys_v2', JSON.stringify(keysCache));
+    localStorage.setItem('gamepasta_pms_v2', JSON.stringify(pmsCache));
+    localStorage.setItem('gamepasta_users_v2', JSON.stringify(usersCache));
+    localStorage.setItem('gamepasta_bans_v2', JSON.stringify(bansCache));
   }
 
   function renderBans() {
