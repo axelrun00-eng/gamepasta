@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v4.2 Cloud)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.5 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -110,7 +110,7 @@
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.2 Cloud]</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.5 Cloud]</h1>
       <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
@@ -129,8 +129,11 @@
   </div>
 
   <div id="homeView">
-    <div id="modAddServerBar" style="display:none; margin-bottom:5px; text-align:right;">
-      <button class="btn-small" onclick="openServerModal()">+ Добавить сервер</button>
+    <div style="margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+      <button class="logout-btn" onclick="checkServersPing()">[Обновить пинг серверов]</button>
+      <span id="modAddServerBar" style="display:none;">
+        <button class="btn-small" onclick="openServerModal()">+ Добавить сервер</button>
+      </span>
     </div>
     <table class="forum-table">
       <thead>
@@ -286,7 +289,7 @@
         </select>
       </div>
       <div class="form-row"><b>Название сервера:</b><br><input type="text" id="srvName" placeholder="Наш Серверок Minecraft" required></div>
-      <div class="form-row"><b>IP или адрес:</b><br><input type="text" id="srvIp" placeholder="nashserverok123.aternos.me" required></div>
+      <div class="form-row"><b>IP или адрес (можно с :портом):</b><br><input type="text" id="srvIp" placeholder="nashserverok123.aternos.me" required></div>
       <div class="form-row"><b>Макс. слотов (игроков):</b><br><input type="text" id="srvMax" value="20" required></div>
       <button type="submit" class="btn-small" style="width:100%;">Добавить сервер</button>
     </form>
@@ -365,7 +368,7 @@
   const defaultTopics = {
     news: {
       title: 'Новости',
-      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru! Подключён мониторинг Minecraft!', status: '' }]
+      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru!', status: '' }]
     },
     rules: {
       title: 'Правила',
@@ -401,11 +404,43 @@
   let usersCache = ['Lakar', 'Модератор', 'Основатель', 'Философ'];
   let socialCache = {};
   let bansCache = { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
-  let serversCache = [
-    { type: 'mc', name: 'GamePasta :: Minecraft Server', ip: 'nashserverok123.aternos.me', max: '20' },
-    { type: 'web', name: 'GamePasta :: CS:S Jailbreak', ip: 'Скоро запуск', max: '32' }
-  ];
+  let serversCache = [];
   let serversStatus = {};
+
+  async function checkOneMcServer(ipRaw) {
+    const parts = ipRaw.trim().split(':');
+    const host = parts[0];
+    const port = parts[1] || '25565';
+    const start = Date.now();
+
+    try {
+      const r1 = await fetch('https://mcsrvstat.us' + encodeURIComponent(ipRaw) + '?t=' + Date.now());
+      const d1 = await r1.json();
+      if (d1 && d1.online) {
+        return {
+          online: true,
+          ms: Date.now() - start,
+          now: d1.players ? d1.players.online : 0,
+          max: d1.players ? d1.players.max : 20
+        };
+      }
+    } catch (e) {}
+
+    try {
+      const r2 = await fetch(`https://mcapi.us{encodeURIComponent(host)}&port=${port}`);
+      const d2 = await r2.json();
+      if (d2 && d2.online) {
+        return {
+          online: true,
+          ms: Date.now() - start,
+          now: d2.players ? d2.players.now : 0,
+          max: d2.players ? d2.players.max : 20
+        };
+      }
+    } catch (e) {}
+
+    return { online: false };
+  }
 
   async function checkServersPing() {
     for (let i = 0; i < serversCache.length; i++) {
@@ -414,26 +449,10 @@
         serversStatus[i] = { online: false };
         continue;
       }
-      const start = Date.now();
       if (s.type === 'mc' || s.ip.includes('aternos.me')) {
-        try {
-          const res = await fetch('https://mcsrvstat.us' + encodeURIComponent(s.ip));
-          const info = await res.json();
-          const ping = Date.now() - start;
-          if (info && info.online) {
-            serversStatus[i] = {
-              online: true,
-              ms: ping,
-              now: info.players ? info.players.online : 0,
-              max: info.players ? info.players.max : s.max
-            };
-          } else {
-            serversStatus[i] = { online: false };
-          }
-        } catch (e) {
-          serversStatus[i] = { online: false };
-        }
+        serversStatus[i] = await checkOneMcServer(s.ip);
       } else {
+        const start = Date.now();
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), 2000);
         try {
@@ -455,8 +474,8 @@
       const res = await fetch(SB_URL + '&select=payload', { headers: SB_HEADERS });
       const rows = await res.json();
       if (isSaving) return;
-      if (rows && rows.length > 0 && rows.payload) {
-        const d = rows.payload;
+      if (rows && rows.length > 0 && rows[0].payload) {
+        const d = rows[0].payload;
         if (d.topics && Object.keys(d.topics).length > 0) {
           topicsData = d.topics;
           if (d.keys) keysCache = d.keys;
@@ -464,7 +483,7 @@
           if (d.users) usersCache = d.users;
           if (d.social) socialCache = d.social;
           if (d.bans) bansCache = d.bans;
-          if (d.servers) serversCache = d.servers;
+          if (Array.isArray(d.servers)) serversCache = d.servers;
         } else {
           await saveAll();
         }
@@ -507,7 +526,7 @@
     const srvBar = document.getElementById('modAddServerBar');
     if (!tbody) return;
     const u = getUser();
-    if (srvBar) srvBar.style.display = (u && u.isMod) ? 'block' : 'none';
+    if (srvBar) srvBar.style.display = (u && u.isMod) ? 'inline-block' : 'none';
 
     if (!serversCache || serversCache.length === 0) {
       tbody.innerHTML =
@@ -523,7 +542,7 @@
       const pingText = isUp
         ? `<span style="color:#274e13; font-weight:bold;">Online (${st.ms} ms)</span>`
         : `<span style="color:#a8071a; font-weight:bold;">No running</span>`;
-      const players = isUp ? `${st.now}/${st.max}` : `0/${s.max}`;
+      const players = isUp ? `${st.now}/${st.max || s.max}` : `0/${s.max}`;
       const delBtn = (u && u.isMod) ? `<button class="del-btn" onclick="deleteServer(${idx})">[X]</button>` : '';
       return `<tr class="topic-row"><td><b>${s.name}</b></td>` +
         `<td style="font-family:monospace;">${s.ip}</td>` +
