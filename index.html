@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v4.0 Cloud)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.1 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -110,7 +110,7 @@
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.0 Cloud]</h1>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.1 Cloud]</h1>
       <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
@@ -129,6 +129,21 @@
   </div>
 
   <div id="homeView">
+    <div id="modAddServerBar" style="display:none; margin-bottom:5px; text-align:right;">
+      <button class="btn-small" onclick="openServerModal()">+ Добавить сервер</button>
+    </div>
+    <table class="forum-table">
+      <thead>
+        <tr>
+          <th style="width: 38%;">Мониторинг серверов</th>
+          <th style="width: 24%;">IP-адрес</th>
+          <th style="width: 16%; text-align: center;">Игроки</th>
+          <th style="width: 22%; text-align: center;">Пинг / Статус</th>
+        </tr>
+      </thead>
+      <tbody id="serversMonitorBody"></tbody>
+    </table>
+
     <table class="forum-table">
       <tr><th style="width: 78%;">Информация проекта</th><th style="width: 22%; text-align: center;">Сообщений</th></tr>
       <tr class="topic-row">
@@ -256,6 +271,24 @@
   </div>
 </div>
 
+<div class="modal-bg" id="addServerModal">
+  <div class="modal-card">
+    <div style="background:#59752d; color:#fff; padding:5px; display:flex; justify-content:space-between; font-weight:bold;">
+      <span>Добавить сервер в мониторинг</span>
+      <span style="cursor:pointer;" onclick="closeServerModal()">[X]</span>
+    </div>
+    <form id="createServerForm" style="margin-top:8px;">
+      <div class="form-row"><b>Название сервера:</b><br><input type="text" id="srvName" placeholder="GamePasta Jailbreak #1" required></div>
+      <div class="form-row"><b>IP и порт:</b><br><input type="text" id="srvIp" placeholder="192.168.0.1:27015" required></div>
+      <div class="form-row"><b>Макс. слотов (игроков):</b><br><input type="text" id="srvMax" value="32" required></div>
+      <div class="form-row">
+        <label><input type="checkbox" id="srvRunningCheck"> Сервер запущен прямо сейчас (без галочки будет No running)</label>
+      </div>
+      <button type="submit" class="btn-small" style="width:100%;">Добавить сервер</button>
+    </form>
+  </div>
+</div>
+
 <div class="modal-bg" id="newTopicModal">
   <div class="modal-card">
     <div style="background:#59752d; color:#fff; padding:5px; display:flex; justify-content:space-between; font-weight:bold;">
@@ -328,7 +361,7 @@
   const defaultTopics = {
     news: {
       title: 'Новости',
-      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru! Облачная база Supabase подключена!', status: '' }]
+      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru! Добавлен мониторинг серверов!', status: '' }]
     },
     rules: {
       title: 'Правила',
@@ -364,6 +397,10 @@
   let usersCache = ['Lakar', 'Модератор', 'Основатель', 'Философ'];
   let socialCache = {};
   let bansCache = { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
+  let serversCache = [
+    { name: 'GamePasta.ru :: CS:S Jailbreak [Тюрьма]', ip: 'Скоро запуск', max: '32', running: false },
+    { name: 'GamePasta.ru :: Minecraft Survival', ip: 'Скоро запуск', max: '50', running: false }
+  ];
   async function syncFromCloud() {
     if (isSaving) return;
     try {
@@ -379,11 +416,13 @@
           if (d.users) usersCache = d.users;
           if (d.social) socialCache = d.social;
           if (d.bans) bansCache = d.bans;
+          if (d.servers) serversCache = d.servers;
         } else {
           await saveAll();
         }
       }
       renderHomeTopics();
+      renderServers();
       if (currentTopic && topicsData[currentTopic]) renderPosts();
       if (activeFriend) renderChat();
       if (document.getElementById('cabinetView').style.display === 'block') {
@@ -406,7 +445,8 @@
             pms: pmsCache,
             users: usersCache,
             social: socialCache,
-            bans: bansCache
+            bans: bansCache,
+            servers: serversCache
           }
         })
       });
@@ -414,11 +454,76 @@
     isSaving = false;
   }
 
+  function renderServers() {
+    const tbody = document.getElementById('serversMonitorBody');
+    const srvBar = document.getElementById('modAddServerBar');
+    if (!tbody) return;
+    const u = getUser();
+    if (srvBar) srvBar.style.display = (u && u.isMod) ? 'block' : 'none';
+
+    if (!serversCache || serversCache.length === 0) {
+      tbody.innerHTML =
+        `<tr><td><b>Серверы не добавлены</b></td><td>—</td>` +
+        `<td style="text-align:center;">0/0</td>` +
+        `<td style="text-align:center; color:#a8071a; font-weight:bold;">No running</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = serversCache.map((s, idx) => {
+      const pingText = s.running
+        ? `<span style="color:#274e13; font-weight:bold;">Online (${18 + idx * 6} ms)</span>`
+        : `<span style="color:#a8071a; font-weight:bold;">No running</span>`;
+      const players = s.running ? `1/${s.max}` : `0/${s.max}`;
+      let controls = '';
+      if (u && u.isMod) {
+        controls = ` <button class="logout-btn" style="padding:1px 4px; font-size:9px;" onclick="toggleServerStatus(${idx})">Вкл/Выкл</button>` +
+          `<button class="del-btn" onclick="deleteServer(${idx})">[X]</button>`;
+      }
+      return `<tr class="topic-row"><td><b>${s.name}</b></td>` +
+        `<td style="font-family:monospace;">${s.ip}</td>` +
+        `<td style="text-align:center;">${players}</td>` +
+        `<td style="text-align:center;">${pingText}${controls}</td></tr>`;
+    }).join('');
+  }
+
+  function openServerModal() { document.getElementById('addServerModal').style.display = 'flex'; }
+  function closeServerModal() { document.getElementById('addServerModal').style.display = 'none'; }
+
+  document.getElementById('createServerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const u = getUser();
+    if (!u || !u.isMod) return;
+    serversCache.push({
+      name: document.getElementById('srvName').value.trim(),
+      ip: document.getElementById('srvIp').value.trim(),
+      max: document.getElementById('srvMax').value.trim() || '32',
+      running: document.getElementById('srvRunningCheck').checked
+    });
+    document.getElementById('srvName').value = '';
+    document.getElementById('srvIp').value = '';
+    closeServerModal();
+    renderServers();
+    await saveAll();
+  });
+
+  async function toggleServerStatus(idx) {
+    serversCache[idx].running = !serversCache[idx].running;
+    renderServers();
+    await saveAll();
+  }
+
+  async function deleteServer(idx) {
+    serversCache.splice(idx, 1);
+    renderServers();
+    await saveAll();
+  }
+
   function getRoomId(u1, u2) {
     return [u1.toLowerCase(), u2.toLowerCase()].sort().join('__');
   }
 
   function renderHomeTopics() {
+    renderServers();
     const tbody = document.getElementById('dynamicTopicsBody');
     if (!tbody) return;
     const u = getUser();
