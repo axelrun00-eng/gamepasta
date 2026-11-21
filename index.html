@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v3.0)</title>
+  <title>GamePasta.ru :: Игровой портал (v4.0 Cloud)</title>
   <style>
     body {
       background-color: #162919;
@@ -110,8 +110,8 @@
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v3.0]</h1>
-      <p>Windows XP Olive Edition • Серверы CS:S и Minecraft</p>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v4.0 Cloud]</h1>
+      <p>Windows XP Olive Edition • Supabase Cloud Sync</p>
     </div>
     <button class="login-btn" id="openLoginBtn" onclick="openModal()">[ Вход / Регистрация ]</button>
   </div>
@@ -306,6 +306,14 @@
   </div>
 </div>
 <script>
+  const SB_URL = 'https://supabase.co';
+  const SB_KEY = 'sb_publishable_xRZh3azDr-LzxGxyRGwe5Q_WwjW5USl';
+  const SB_HEADERS = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json'
+  };
+
   const DEFAULT_AVA =
     'data:image/svg+xml;utf8,' +
     '<svg xmlns="http://w3.org" width="64" height="64">' +
@@ -315,11 +323,12 @@
 
   let currentTopic = '';
   let activeFriend = '';
+  let isSaving = false;
 
   const defaultTopics = {
     news: {
       title: 'Новости',
-      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru!', status: '' }]
+      posts: [{ owner: 'Основатель', author: 'Основатель', ava: '', text: 'Добро пожаловать на форум GamePasta.ru! Облачная база Supabase подключена!', status: '' }]
     },
     rules: {
       title: 'Правила',
@@ -349,21 +358,62 @@
     }
   };
 
-  let topicsData = JSON.parse(localStorage.getItem('gp_topics_v3')) || defaultTopics;
-  let keysCache = JSON.parse(localStorage.getItem('gp_keys_v3')) || { adm: ['GP-ADM-2026-MOSCOW'], mod: ['GP-MOD-9999-BOSS'] };
-  let pmsCache = JSON.parse(localStorage.getItem('gp_pms_v3')) || {};
-  let usersCache = JSON.parse(localStorage.getItem('gp_users_v3')) || ['Lakar', 'Модератор', 'Основатель', 'Философ'];
-  let socialCache = JSON.parse(localStorage.getItem('gp_social_v3')) || {};
-  let bansCache = JSON.parse(localStorage.getItem('gp_bans_v3')) || { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
-
-  function saveAll() {
-    localStorage.setItem('gp_topics_v3', JSON.stringify(topicsData));
-    localStorage.setItem('gp_keys_v3', JSON.stringify(keysCache));
-    localStorage.setItem('gp_pms_v3', JSON.stringify(pmsCache));
-    localStorage.setItem('gp_users_v3', JSON.stringify(usersCache));
-    localStorage.setItem('gp_social_v3', JSON.stringify(socialCache));
-    localStorage.setItem('gp_bans_v3', JSON.stringify(bansCache));
+  let topicsData = defaultTopics;
+  let keysCache = { adm: ['GP-ADM-2026-MOSCOW'], mod: ['GP-MOD-9999-BOSS'] };
+  let pmsCache = {};
+  let usersCache = ['Lakar', 'Модератор', 'Основатель', 'Философ'];
+  let socialCache = {};
+  let bansCache = { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
+  async function syncFromCloud() {
+    if (isSaving) return;
+    try {
+      const res = await fetch(SB_URL + '&select=payload', { headers: SB_HEADERS });
+      const rows = await res.json();
+      if (isSaving) return;
+      if (rows && rows.length > 0 && rows.payload) {
+        const d = rows.payload;
+        if (d.topics && Object.keys(d.topics).length > 0) {
+          topicsData = d.topics;
+          if (d.keys) keysCache = d.keys;
+          if (d.pms) pmsCache = d.pms;
+          if (d.users) usersCache = d.users;
+          if (d.social) socialCache = d.social;
+          if (d.bans) bansCache = d.bans;
+        } else {
+          await saveAll();
+        }
+      }
+      renderHomeTopics();
+      if (currentTopic && topicsData[currentTopic]) renderPosts();
+      if (activeFriend) renderChat();
+      if (document.getElementById('cabinetView').style.display === 'block') {
+        renderFriends();
+        renderFoes();
+      }
+    } catch (e) {}
   }
+
+  async function saveAll() {
+    isSaving = true;
+    try {
+      await fetch(SB_URL, {
+        method: 'PATCH',
+        headers: SB_HEADERS,
+        body: JSON.stringify({
+          payload: {
+            topics: topicsData,
+            keys: keysCache,
+            pms: pmsCache,
+            users: usersCache,
+            social: socialCache,
+            bans: bansCache
+          }
+        })
+      });
+    } catch (e) {}
+    isSaving = false;
+  }
+
   function getRoomId(u1, u2) {
     return [u1.toLowerCase(), u2.toLowerCase()].sort().join('__');
   }
@@ -402,7 +452,7 @@
   function openNewTopicModal() { document.getElementById('newTopicModal').style.display = 'flex'; }
   function closeNewTopicModal() { document.getElementById('newTopicModal').style.display = 'none'; }
 
-  document.getElementById('createTopicForm').addEventListener('submit', function(e) {
+  document.getElementById('createTopicForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const u = getUser();
     if (!u || !u.isMod) return;
@@ -418,18 +468,18 @@
       posts: [{ owner: u.name, author: `${u.name} [${u.role}]`, ava: u.ava || '', text: text, status: '' }]
     };
 
-    saveAll();
     document.getElementById('newTopicTitle').value = '';
     document.getElementById('newTopicDesc').value = '';
     document.getElementById('newTopicFirstPost').value = '';
     closeNewTopicModal();
     renderHomeTopics();
+    await saveAll();
   });
 
-  function deleteCustomTopic(key) {
+  async function deleteCustomTopic(key) {
     delete topicsData[key];
-    saveAll();
     renderHomeTopics();
+    await saveAll();
   }
   function renderBans() {
     const idBox = document.getElementById('bannedIdsList');
@@ -443,22 +493,22 @@
     ).join('') || '<span style="color:#666;">Нет банов</span>';
   }
 
-  function addBan(type) {
+  async function addBan(type) {
     const inp = document.getElementById(type === 'id' ? 'banIdInput' : 'banIpInput');
     const val = inp.value.trim();
     if (!val) return;
     if (type === 'id' && !bansCache.ids.includes(val)) bansCache.ids.push(val);
     if (type === 'ip' && !bansCache.ips.includes(val)) bansCache.ips.push(val);
     inp.value = '';
-    saveAll();
     renderBans();
+    await saveAll();
   }
 
-  function removeBan(type, idx) {
+  async function removeBan(type, idx) {
     if (type === 'id') bansCache.ids.splice(idx, 1);
     else bansCache.ips.splice(idx, 1);
-    saveAll();
     renderBans();
+    await saveAll();
   }
 
   function uploadAvatar(event) {
@@ -494,21 +544,21 @@
     openCabinet();
   }
 
-  function createNewKey(type) {
+  async function createNewKey(type) {
     const num = Math.floor(1000 + Math.random() * 9000);
     const code = `GP-${type}-${num}-KEY`;
     if (type === 'ADM') keysCache.adm.push(code);
     else keysCache.mod.push(code);
-    saveAll();
     renderKeysList();
-    alert(`Создан ключ (${type}): ${code}`);
+    alert(`Создан и сохранён в Supabase ключ (${type}): ${code}`);
+    await saveAll();
   }
 
-  function deleteKey(type, idx) {
+  async function deleteKey(type, idx) {
     if (type === 'ADM') keysCache.adm.splice(idx, 1);
     else keysCache.mod.splice(idx, 1);
-    saveAll();
     renderKeysList();
+    await saveAll();
   }
 
   function renderKeysList() {
@@ -582,7 +632,7 @@
     showHome();
   }
 
-  document.getElementById('authForm').addEventListener('submit', function(e) {
+  document.getElementById('authForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const name = document.getElementById('username').value.trim();
     const isSimple = document.getElementById('simpleAccCheck').checked;
@@ -617,7 +667,7 @@
 
     if (!isSimple && !usersCache.some(u => u.toLowerCase() === name.toLowerCase())) {
       usersCache.push(name);
-      saveAll();
+      await saveAll();
     }
     renderUser();
     closeModal();
@@ -630,7 +680,7 @@
     document.getElementById('topicView').style.display = 'none';
     document.getElementById('cabinetView').style.display = 'none';
     document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Главное меню';
-    renderHomeTopics();
+    syncFromCloud();
   }
 
   function getUserSocial() {
@@ -644,11 +694,11 @@
   function getFriends() { return getUserSocial().friends; }
   function getFoes() { return getUserSocial().foes; }
 
-  function saveSocialData(friendsArr, foesArr) {
+  async function saveSocialData(friendsArr, foesArr) {
     const u = getUser();
     if (!u) return;
     socialCache[u.name.toLowerCase()] = { friends: friendsArr, foes: foesArr };
-    saveAll();
+    await saveAll();
   }
 
   function saveBio() {
@@ -688,6 +738,7 @@
     document.getElementById('cabContent').style.display = u.isSimple ? 'none' : 'flex';
 
     if (!u.isSimple) { renderFriends(); renderFoes(); }
+    syncFromCloud();
   }
 
   function renderFriends() {
@@ -721,10 +772,11 @@
     setTimeout(() => { el.textContent = ''; }, 3000);
   }
 
-  function addFriend() {
+  async function addFriend() {
     const inp = document.getElementById('newFriendInput');
     const raw = inp.value.trim();
     if (!raw) return;
+    await syncFromCloud();
     const me = getUser();
     if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('friendStatusMsg', 'Нельзя добавить себя', true); return; }
     const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
@@ -732,17 +784,18 @@
     const list = getFriends();
     if (!list.includes(found)) {
       list.push(found);
-      saveSocialData(list, getFoes());
+      inp.value = '';
+      renderFriends();
       setStatusText('friendStatusMsg', `Добавлен: ${found}`, false);
-    }
-    inp.value = '';
-    renderFriends();
+      await saveSocialData(list, getFoes());
+    } else inp.value = '';
   }
 
-  function addFoe() {
+  async function addFoe() {
     const inp = document.getElementById('newFoeInput');
     const raw = inp.value.trim();
     if (!raw) return;
+    await syncFromCloud();
     const me = getUser();
     if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('foeStatusMsg', 'Нельзя добавить себя', true); return; }
     const found = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
@@ -750,14 +803,15 @@
     const foes = getFoes();
     if (!foes.includes(found)) {
       foes.push(found);
-      saveSocialData(getFriends().filter(x => x !== found), foes);
+      const newFriends = getFriends().filter(x => x !== found);
+      inp.value = '';
+      renderFriends();
+      renderFoes();
       setStatusText('foeStatusMsg', `В ЧС: ${found}`, false);
-    }
-    inp.value = '';
-    renderFriends();
-    renderFoes();
+      await saveSocialData(newFriends, foes);
+    } else inp.value = '';
   }
-  function delFriend(idx) {
+  async function delFriend(idx) {
     const list = getFriends();
     if (list[idx] === activeFriend) {
       activeFriend = '';
@@ -765,15 +819,15 @@
       document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
     }
     list.splice(idx, 1);
-    saveSocialData(list, getFoes());
     renderFriends();
+    await saveSocialData(list, getFoes());
   }
 
-  function delFoe(idx) {
+  async function delFoe(idx) {
     const list = getFoes();
     list.splice(idx, 1);
-    saveSocialData(getFriends(), list);
     renderFoes();
+    await saveSocialData(getFriends(), list);
   }
 
   function selectFriend(name) {
@@ -781,7 +835,7 @@
     document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`;
     document.getElementById('pmSendArea').style.display = 'block';
     renderFriends();
-    renderChat();
+    syncFromCloud();
   }
 
   function renderChat() {
@@ -795,7 +849,7 @@
     log.scrollTop = log.scrollHeight;
   }
 
-  function sendPM() {
+  async function sendPM() {
     const u = getUser();
     const inp = document.getElementById('pmInput');
     const txt = inp.value.trim();
@@ -804,8 +858,8 @@
     if (!pmsCache[room]) pmsCache[room] = [];
     pmsCache[room].push(`<b>${u.name}:</b> ${txt}`);
     inp.value = '';
-    saveAll();
     renderChat();
+    await saveAll();
   }
 
   function openTopic(id) {
@@ -831,6 +885,7 @@
       area.disabled = (u && u.isSimple && id === 'admins');
     }
     renderPosts();
+    syncFromCloud();
   }
 
   function renderPosts() {
@@ -865,14 +920,14 @@
   function delPost(idx) {
     topicsData[currentTopic].posts.splice(idx, 1);
     document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
-    saveAll();
     renderPosts();
+    saveAll();
   }
 
   function setSt(idx, st) {
     topicsData[currentTopic].posts[idx].status = st;
-    saveAll();
     renderPosts();
+    saveAll();
   }
 
   function addPost() {
@@ -888,11 +943,13 @@
     });
     document.getElementById('postText').value = '';
     document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
-    saveAll();
     renderPosts();
+    saveAll();
   }
 
   renderUser();
+  syncFromCloud();
+  setInterval(syncFromCloud, 3000);
 </script>
 </body>
 </html>
