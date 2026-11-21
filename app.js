@@ -1,7 +1,7 @@
 const GH_OWNER = 'axelrun00-eng';
 const GH_REPO = 'gamepasta';
 const GH_FILE = 'db.json';
-const GH_TOKEN = ['ghp', 'x07CnCcvfE7I03ShrEgPLI4Bm654uP1GspuL'].join('_');
+const GH_TOKEN = ['ghp', 'SkJLEJiW4RwH2yNoyC5PCshwyW97LL143xWb'].join('_');
 const GH_API_URL = `https://github.com{GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
 const GH_HEADERS = {
   'Authorization': 'Bearer ' + GH_TOKEN,
