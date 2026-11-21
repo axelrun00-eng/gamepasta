@@ -16,9 +16,7 @@ body {
   padding: 8px;
 }
 .header-bar {
-  background: linear-gradient(
-    180deg, #b8cf8c 0%, #8ba858 14%, #6d8c3c 50%, #59752d 51%, #769642 100%
-  );
+  background: linear-gradient(180deg, #b8cf8c 0%, #8ba858 14%, #6d8c3c 50%, #59752d 51%, #769642 100%);
   color: #ffffff;
   padding: 10px 14px;
   border: 2px outset #d8e8b8;
@@ -26,6 +24,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .header-bar h1 { margin: 0; font-size: 16px; text-shadow: 1px 1px 2px #1d2b0d; }
 .header-bar p { margin: 2px 0 0 0; font-size: 10px; color: #f4fae8; }
@@ -98,3 +98,105 @@ input:disabled { background: #dcdad0; }
 .sub-panel { display: none; margin-top: 4px; padding: 5px; background: #e1e8d5; border: 1px dashed #59752d; }
 .form-row { margin-bottom: 7px; }
 .form-row input[type="text"], .form-row input[type="email"], .form-row input[type="password"], .form-row select { width: 94%; }
+
+/* === MODERNIC THEME === */
+body.modernic {
+  background: radial-gradient(circle at top, #18222f 0%, #0b0f14 100%);
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+}
+body.modernic .wrapper {
+  background: #131922;
+  border: 1px solid #263244;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+  padding: 16px;
+}
+body.modernic .header-bar {
+  background: linear-gradient(135deg, #1d2838 0%, #151e2b 100%);
+  border: 1px solid #2e3d54;
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+body.modernic .header-bar h1 { font-size: 18px; color: #4ade80; text-shadow: 0 0 12px rgba(74, 222, 128, 0.35); }
+body.modernic .header-bar p { color: #94a3b8; font-size: 11px; }
+body.modernic .login-btn, body.modernic .logout-btn, body.modernic .btn-small {
+  background: #22c55e;
+  border: none;
+  border-radius: 6px;
+  color: #052e16;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  transition: 0.2s;
+}
+body.modernic .login-btn:hover, body.modernic .logout-btn:hover, body.modernic .btn-small:hover {
+  background: #4ade80;
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+}
+body.modernic .user-panel {
+  background: #1a2332;
+  border: 1px solid #2c3a4f;
+  border-radius: 8px;
+  color: #f1f5f9;
+}
+body.modernic .nav-bar {
+  background: #18202c;
+  border: 1px solid #273346;
+  border-radius: 8px;
+  color: #94a3b8;
+}
+body.modernic .nav-bar a { color: #4ade80; text-decoration: none; }
+body.modernic table.forum-table {
+  border: 1px solid #263244;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #171f2b;
+}
+body.modernic table.forum-table th {
+  background: #1f2937;
+  color: #4ade80;
+  border: none;
+  border-bottom: 1px solid #2e3b4e;
+  padding: 10px 12px;
+}
+body.modernic table.forum-table td {
+  background: #171f2b;
+  color: #e2e8f0;
+  border: none;
+  border-bottom: 1px solid #222d3d;
+  padding: 10px 12px;
+}
+body.modernic .topic-title { color: #60a5fa; text-decoration: none; font-size: 13px; }
+body.modernic .topic-title:hover { color: #93c5fd; }
+body.modernic .topic-desc { color: #94a3b8; font-size: 11px; }
+body.modernic .post-box {
+  background: #18202c;
+  border: 1px solid #283548;
+  border-radius: 10px;
+  color: #e2e8f0;
+}
+body.modernic .post-header {
+  background: #202b3c;
+  border-bottom: 1px solid #2d3b52;
+  border-radius: 6px;
+}
+body.modernic .pm-col, body.modernic .pm-chat, body.modernic .admin-box {
+  background: #18202c;
+  border: 1px solid #283548;
+  border-radius: 8px;
+}
+body.modernic .ban-box { background: #2a161b; border: 1px solid #7f1d1d; border-radius: 8px; }
+body.modernic .chat-log, body.modernic textarea, body.modernic select,
+body.modernic input[type="text"], body.modernic input[type="email"], body.modernic input[type="password"] {
+  background: #0f151e;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+}
+body.modernic .friend-item { background: #202b3c; border: 1px solid #334155; border-radius: 6px; }
+body.modernic .friend-active { background: #22c55e; color: #052e16; }
+body.modernic .key-tag { background: #0f151e; border: 1px dashed #4ade80; color: #4ade80; border-radius: 4px; }
+body.modernic .modal-card { background: #18202c; border: 1px solid #334155; border-radius: 12px; color: #f1f5f9; }
+body.modernic .del-btn { background: #450a0a; border-color: #991b1b; color: #fca5a5; border-radius: 4px; }
