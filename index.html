@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v5.1 Modernic)</title>
+  <title>GamePasta.ru :: Игровой портал (v6.0 Conferences & Polls)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v5.1]</h1>
-      <p id="themeSubtitle">Windows XP Olive Edition • Supabase Cloud Sync</p>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v6.0]</h1>
+      <p id="themeSubtitle">Windows XP Olive Edition • GitHub Cloud Sync</p>
     </div>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
       <button class="login-btn" id="themeToggleBtn" onclick="toggleSiteTheme()">[ Стиль: OldSchool ]</button>
@@ -22,7 +22,7 @@
   <div class="user-panel" id="savedUserPanel">
     <div id="savedUserText" style="display:flex; align-items:center;"></div>
     <div>
-      <button class="logout-btn" onclick="openCabinet()">Личный раздел</button>
+      <button class="logout-btn" onclick="openCabinet()">Личный раздел / Конфы</button>
       <button class="logout-btn" onclick="logoutUser()">Выход</button>
     </div>
   </div>
@@ -50,6 +50,11 @@
       <tbody id="serversMonitorBody"></tbody>
     </table>
 
+    <div id="staffHomePollBar" style="display:none; margin-bottom:6px; text-align:right;">
+      <button class="btn-small" onclick="openPollModal('home')">+ Создать опрос на главной</button>
+    </div>
+    <div id="homePollsContainer"></div>
+
     <table class="forum-table">
       <tr><th style="width: 78%;">Информация проекта</th><th style="width: 22%; text-align: center;">Сообщений</th></tr>
       <tr class="topic-row">
@@ -71,9 +76,8 @@
       <tbody id="dynamicTopicsBody"></tbody>
     </table>
   </div>
-
   <div id="cabinetView" style="display: none;">
-    <table class="forum-table"><tr><th>Личный раздел • Профиль, Друзья, Недруги, ЛС и Баны</th></tr></table>
+    <table class="forum-table"><tr><th>Личный раздел • Профиль, Друзья, ЛС и Конференции</th></tr></table>
 
     <div class="post-box" style="display:flex; gap:12px; align-items:flex-start;">
       <img id="cabAvatarImg" class="ava-cab" src="" alt="Аватар">
@@ -88,13 +92,13 @@
           <b>Описание профиля (о себе):</b><br>
           <textarea id="userBioInput" style="height:42px; margin-top:3px;" placeholder="Напишите о себе..."></textarea><br>
           <button class="logout-btn" onclick="saveBio()">Сохранить описание</button>
-          <span id="bioSavedNote" style="color:#274e13; font-weight:bold;"></span>
+          <span id="bioSavedNote" style="color:#22c55e; font-weight:bold;"></span>
         </div>
       </div>
     </div>
 
     <div id="adminBanPanel" class="ban-box" style="display: none;">
-      <b style="color:#800000;">Панель Админа/Модератора :: Заблокированные ID и IP</b>
+      <b style="color:#ef4444;">Панель Админа/Модератора :: Заблокированные ID и IP</b>
       <div style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
           <b>Заблокированные ID:</b>
@@ -114,6 +118,7 @@
         </div>
       </div>
     </div>
+
     <div id="keygenPanel" class="admin-box" style="display: none;">
       <b>Генератор ключей доступа (Модератор):</b><br>
       <div style="margin: 6px 0;">
@@ -124,56 +129,124 @@
     </div>
 
     <div id="cabSimpleBlocked" class="warn-label" style="display: none;">
-      <b>ОШИБКА:</b> Простой аккаунт не может иметь аватарку, описание, друзей и ЛС.
+      <b>ОШИБКА:</b> Простой аккаунт не может иметь аватарку, описание, друзей, ЛС и конференции.
     </div>
 
-    <div id="cabContent" class="pm-grid">
-      <div class="pm-col">
-        <b>Друзья:</b>
-        <div style="margin: 5px 0;">
-          <input type="text" id="newFriendInput" placeholder="Ник друга..." style="width: 58%;">
-          <button class="logout-btn" onclick="addFriend()">+ Доб.</button>
+    <div id="cabContent">
+      <div class="pm-grid">
+        <div class="pm-col">
+          <b>Друзья:</b>
+          <div style="margin: 5px 0;">
+            <input type="text" id="newFriendInput" placeholder="Ник друга..." style="width: 58%;">
+            <button class="logout-btn" onclick="addFriend()">+ Доб.</button>
+          </div>
+          <div id="friendStatusMsg" style="font-size:10px; font-weight:bold;"></div>
+          <div id="friendsListBox"></div>
         </div>
-        <div id="friendStatusMsg" style="font-size:10px; font-weight:bold;"></div>
-        <div id="friendsListBox"></div>
+
+        <div class="pm-col">
+          <b style="color:#ef4444;">Недруги (ЧС):</b>
+          <div style="margin: 5px 0;">
+            <input type="text" id="newFoeInput" placeholder="Ник врага..." style="width: 58%;">
+            <button class="logout-btn" onclick="addFoe()">+ В ЧС</button>
+          </div>
+          <div id="foeStatusMsg" style="font-size:10px; font-weight:bold;"></div>
+          <div id="foesListBox"></div>
+        </div>
+
+        <div class="pm-chat">
+          <b id="chatWithTitle">Выберите друга для ЛС</b>
+          <div class="chat-log" id="pmChatLog"></div>
+          <div id="pmSendArea" style="display: none;">
+            <input type="text" id="pmInput" placeholder="Текст ЛС..." style="width: 68%;">
+            <button class="btn-small" onclick="sendPM()">Отправить</button>
+          </div>
+        </div>
       </div>
 
-      <div class="pm-col">
-        <b style="color:#800000;">Недруги (ЧС):</b>
-        <div style="margin: 5px 0;">
-          <input type="text" id="newFoeInput" placeholder="Ник врага..." style="width: 58%;">
-          <button class="logout-btn" onclick="addFoe()">+ В ЧС</button>
+      <table class="forum-table" style="margin-top:12px;"><tr><th>Конференции (Общие чаты)</th></tr></table>
+      <div class="pm-grid">
+        <div class="pm-col">
+          <div id="modCreateConfBar" style="display:none; margin-bottom:6px;">
+            <input type="text" id="newConfNameInput" placeholder="Название конфы..." style="width:62%;">
+            <button class="btn-small" onclick="createConference()">+ Создать</button>
+          </div>
+          <b>Доступные конференции:</b>
+          <div id="confListBox" style="margin-top:5px;"></div>
         </div>
-        <div id="foeStatusMsg" style="font-size:10px; font-weight:bold;"></div>
-        <div id="foesListBox"></div>
-      </div>
-
-      <div class="pm-chat">
-        <b id="chatWithTitle">Выберите друга для ЛС</b>
-        <div class="chat-log" id="pmChatLog"></div>
-        <div id="pmSendArea" style="display: none;">
-          <input type="text" id="pmInput" placeholder="Текст ЛС..." style="width: 68%;">
-          <button class="btn-small" onclick="sendPM()">Отправить</button>
+        <div class="pm-chat">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <b id="confActiveTitle">Выберите конференцию слева</b>
+            <span id="staffConfPollBtn" style="display:none;">
+              <button class="logout-btn" onclick="openPollModal('conf')">+ Опрос в конфу</button>
+            </span>
+          </div>
+          <div id="confMembersBox" style="font-size:11px; margin:4px 0;"></div>
+          <div id="modInviteConfBar" style="display:none; margin-bottom:5px;">
+            <input type="text" id="inviteConfNickInput" placeholder="Пригласить ник..." style="width:55%;">
+            <button class="logout-btn" onclick="inviteToConference()">+ Пригласить</button>
+          </div>
+          <div id="confPollsContainer"></div>
+          <div class="chat-log" id="confChatLog"></div>
+          <div id="confSendArea" style="display:none;">
+            <input type="text" id="confMsgInput" placeholder="Написать в конференцию..." style="width:72%;">
+            <button class="btn-small" onclick="sendConfMsg()">Отправить</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div id="topicView" style="display: none;">
-    <table class="forum-table"><tr><th id="topicHeaderTitle">Тема</th></tr></table>
+    <table class="forum-table">
+      <tr>
+        <th style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="topicHeaderTitle">Тема</span>
+          <button class="logout-btn" id="staffTopicPollBtn" style="display:none;" onclick="openPollModal('topic')">+ Создать опрос в теме</button>
+        </th>
+      </tr>
+    </table>
+    <div id="topicPollsContainer"></div>
     <div id="postsContainer"></div>
     <div class="post-box" id="replyBox">
       <b>Быстрый ответ:</b><br>
       <textarea id="postText"></textarea><br>
       <button class="btn-small" onclick="addPost()">Отправить пост</button>
-      <div id="simpleWarnText" style="color:#800000; display:none;">
+      <div id="simpleWarnText" style="color:#ef4444; display:none;">
         Простой аккаунт не может писать админам, в ЛС и голосовать.
       </div>
     </div>
   </div>
-
   <div style="text-align:center; font-size:10px; color:#64748b; margin-top:8px;">
     © 2005-2026 GamePasta.ru • OldSchool &amp; Modernic Edition
+  </div>
+</div>
+
+<div class="modal-bg" id="pollModal">
+  <div class="modal-card">
+    <div style="background:#59752d; color:#fff; padding:5px; display:flex; justify-content:space-between; font-weight:bold;">
+      <span>Создание нового опроса (Админ / Модератор)</span>
+      <span style="cursor:pointer;" onclick="closePollModal()">[X]</span>
+    </div>
+    <form id="createPollForm" style="margin-top:8px;">
+      <div class="form-row"><b>Название / Вопрос опроса:</b><br><input type="text" id="pollQuestionInput" placeholder="Какую карту ставим на выходных?" required></div>
+      <div class="form-row">
+        <b>Варианты ответа (каждый с новой строки):</b><br>
+        <textarea id="pollOptionsInput" style="height:75px;" placeholder="de_dust2&#10;de_mirage&#10;awp_lego_2" required></textarea>
+      </div>
+      <div class="form-row">
+        <label style="display:block; margin-bottom:4px;">
+          <input type="checkbox" id="pollAnonCheck"> <b>Аноним-режим</b> (голосование 1 раз, чужие голоса и проценты скрыты)
+        </label>
+        <label style="display:block; margin-bottom:4px;">
+          <input type="checkbox" id="pollMultiCheck"> <b>Можно отметить несколько вариантов</b>
+        </label>
+        <label style="display:block;">
+          <input type="checkbox" id="pollCustomCheck"> <b>Свои варианты</b> (пользователи могут дописать свой ответ)
+        </label>
+      </div>
+      <button type="submit" class="btn-small" style="width:100%;">Опубликовать опрос</button>
+    </form>
   </div>
 </div>
 
