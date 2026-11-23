@@ -903,3 +903,121 @@ function addPost() {
 renderUser();
 syncFromCloud();
 checkServersPing();
+function getUser() { const r = localStorage.getItem('gamepasta_user'); return r ? JSON.parse(r) : null; }
+
+function renderUser() {
+  const u = getUser();
+  const p = document.getElementById('savedUserPanel');
+  const b = document.getElementById('openLoginBtn');
+  const bar = document.getElementById('modCreateTopicBar');
+  if (u) {
+    const clan = getUserClan(u.name);
+    const clanBadge = clan ? ` • Клан: <b>[${clan.tag}] ${clan.name}</b>` : '';
+    document.getElementById('savedUserText').innerHTML = `<img src="${u.ava || DEFAULT_AVA}" class="ava-mini"><span>Ник: <b>${u.name}</b> • Группа: <b>${u.role}</b>${clanBadge}${u.hideStatus ? ' [Невидимка]' : ' [Онлайн]'}</span>`;
+    p.style.display = 'flex'; b.textContent = '[ Сменить ник ]';
+    if (bar) bar.style.display = u.isMod ? 'block' : 'none';
+  } else {
+    p.style.display = 'none'; b.textContent = '[ Вход / Регистрация ]';
+    if (bar) bar.style.display = 'none';
+  }
+  renderHomeTopics();
+}
+
+function logoutUser() { localStorage.removeItem('gamepasta_user'); renderUser(); showHome(); }
+
+document.getElementById('authForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = document.getElementById('username').value.trim();
+  const isSimple = document.getElementById('simpleAccCheck').checked;
+  const noCode = document.getElementById('noCodeCheck').checked;
+  const admVal = document.getElementById('adminCode').value.trim();
+  const isModCheck = document.getElementById('modCheck').checked;
+  const modVal = document.getElementById('modCode').value.trim();
+  const hideStatus = document.getElementById('hideStatusCheck').checked;
+  let isAdm = false, isMod = false;
+
+  if (!isSimple && !noCode) { if (!keysCache.adm.includes(admVal)) { alert('ОШИБКА: Неверный код администрации!'); return; } isAdm = true; }
+  if (!isSimple && isModCheck) { if (!keysCache.mod.includes(modVal)) { alert('ОШИБКА: Неверный код модератора!'); return; } isMod = true; }
+
+  let role = 'Обычный игрок';
+  if (isSimple) role = 'Простой аккаунт';
+  else if (isAdm && isMod) role = 'Главный Админ-Модератор';
+  else if (isMod) role = 'Админ-модератор';
+  else if (isAdm) role = 'Админ-игрок [На проверке]';
+
+  const old = getUser();
+  const ava = (old && old.name === name && !isSimple) ? (old.ava || '') : '';
+  const bio = (old && old.name === name && !isSimple) ? (old.bio || '') : '';
+  localStorage.setItem('gamepasta_user', JSON.stringify({ name, role, isSimple, isAdm, isMod, hideStatus, ava, bio }));
+
+  if (!isSimple && !usersCache.some(u => u.toLowerCase() === name.toLowerCase())) { usersCache.push(name); saveAll(); }
+  renderUser(); closeModal();
+  if (currentTopic) openTopic(currentTopic);
+});
+
+function showHome() {
+  currentTopic = ''; activeFriend = '';
+  document.getElementById('homeView').style.display = 'block';
+  document.getElementById('topicView').style.display = 'none';
+  document.getElementById('cabinetView').style.display = 'none';
+  document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Главное меню';
+  syncFromCloud();
+}
+
+function getUserSocial() {
+  const u = getUser();
+  if (!u) return { friends: ['Lakar', 'Модератор'], foes: [] };
+  const key = u.name.toLowerCase();
+  if (!socialCache[key]) socialCache[key] = { friends: ['Lakar', 'Модератор'], foes: [] };
+  return socialCache[key];
+}
+
+function getFriends() { return getUserSocial().friends; }
+function getFoes() { return getUserSocial().foes; }
+
+function saveSocialData(friendsArr, foesArr) {
+  const u = getUser();
+  if (!u) return;
+  socialCache[u.name.toLowerCase()] = { friends: friendsArr, foes: foesArr };
+  saveAll();
+}
+
+function saveBio() {
+  const u = getUser();
+  if (!u || u.isSimple) return;
+  u.bio = document.getElementById('userBioInput').value.trim();
+  localStorage.setItem('gamepasta_user', JSON.stringify(u));
+  const note = document.getElementById('bioSavedNote');
+  note.textContent = ' Сохранено!';
+  setTimeout(() => { note.textContent = ''; }, 2500);
+}
+
+function openCabinet() {
+  const u = getUser();
+  if (!u) { openModal(); return; }
+  currentTopic = '';
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('topicView').style.display = 'none';
+  document.getElementById('cabinetView').style.display = 'block';
+  document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Личный раздел';
+
+  document.getElementById('cabAvatarImg').src = u.ava || DEFAULT_AVA;
+  document.getElementById('cabProfileInfo').innerHTML = `<b>Ник:</b> ${u.name}<br><b>Группа:</b> ${u.role}<br><b>Статус:</b> ${u.hideStatus ? 'Скрыт (Невидимка)' : 'Виден всем (Онлайн)'}`;
+  const clan = getUserClan(u.name);
+  document.getElementById('cabClanInfo').innerHTML = clan ? `<b>Клан:</b> [${clan.tag}] ${clan.name} (${clan.leader === u.name ? 'Лидер' : 'Участник'})` : `<b>Клан:</b> Не состоит`;
+  document.getElementById('userBioInput').value = u.bio || '';
+
+  const isStaff = (u.isAdm || u.isMod);
+  document.getElementById('adminBanPanel').style.display = isStaff ? 'block' : 'none';
+  if (isStaff) renderBans();
+  document.getElementById('keygenPanel').style.display = u.isMod ? 'block' : 'none';
+  if (u.isMod) renderKeysList();
+
+  document.getElementById('avaUploadBlock').style.display = u.isSimple ? 'none' : 'block';
+  document.getElementById('bioBlock').style.display = u.isSimple ? 'none' : 'block';
+  document.getElementById('cabSimpleBlocked').style.display = u.isSimple ? 'block' : 'none';
+  document.getElementById('cabContent').style.display = u.isSimple ? 'none' : 'block';
+
+  if (!u.isSimple) { renderFriends(); renderFoes(); renderConferences(); }
+  syncFromCloud();
+}
