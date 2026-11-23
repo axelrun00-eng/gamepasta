@@ -1,4 +1,4 @@
-const NTFY_TOPIC = 'gamepasta_sync_axelrun00_v1';
+const NTFY_TOPIC = 'gamepasta_sync_axelrun00_v2';
 const NTFY_URL = 'https://ntfy.sh' + NTFY_TOPIC;
 
 function applySiteTheme(mode) {
@@ -29,6 +29,8 @@ const DEFAULT_AVA =
 
 let currentTopic = '';
 let activeFriend = '';
+let activeConfId = '';
+let pollTargetScope = 'home';
 let isSaving = false;
 let lastSyncTs = 0;
 
@@ -73,6 +75,9 @@ let socialCache = {};
 let bansCache = { ids: ['STEAM_0:0:7771337'], ips: ['185.12.44.90'] };
 let serversCache = [];
 let serversStatus = {};
+let confsCache = [];
+let pollsCache = [];
+let clansCache = [];
 
 const localBackup = localStorage.getItem('gp_cloud_backup_v4');
 if (localBackup) {
@@ -85,6 +90,9 @@ if (localBackup) {
     if (b.social) socialCache = b.social;
     if (b.bans) bansCache = b.bans;
     if (Array.isArray(b.servers)) serversCache = b.servers;
+    if (Array.isArray(b.confs)) confsCache = b.confs;
+    if (Array.isArray(b.polls)) pollsCache = b.polls;
+    if (Array.isArray(b.clans)) clansCache = b.clans;
     if (b.ts) lastSyncTs = b.ts;
   } catch (e) {}
 }
@@ -98,7 +106,10 @@ function saveLocalBackup() {
     users: usersCache,
     social: socialCache,
     bans: bansCache,
-    servers: serversCache
+    servers: serversCache,
+    confs: confsCache,
+    polls: pollsCache,
+    clans: clansCache
   }));
 }
 async function checkOneMcServer(ipRaw) {
@@ -202,6 +213,9 @@ async function syncFromCloud() {
       if (latestState.social) socialCache = latestState.social;
       if (latestState.bans) bansCache = latestState.bans;
       if (Array.isArray(latestState.servers)) serversCache = latestState.servers;
+      if (Array.isArray(latestState.confs)) confsCache = latestState.confs;
+      if (Array.isArray(latestState.polls)) pollsCache = latestState.polls;
+      if (Array.isArray(latestState.clans)) clansCache = latestState.clans;
       saveLocalBackup();
       setCloudBadge('[ Облако: OK ]');
     } else if (!latestState) {
@@ -217,6 +231,7 @@ async function syncFromCloud() {
     if (document.getElementById('cabinetView').style.display === 'block') {
       renderFriends();
       renderFoes();
+      renderConferences();
     }
   } catch (e) {
     setCloudBadge('[ Облако: Ошибка сети ]');
@@ -238,7 +253,10 @@ async function saveAll() {
         users: usersCache,
         social: socialCache,
         bans: bansCache,
-        servers: serversCache
+        servers: serversCache,
+        confs: confsCache,
+        polls: pollsCache,
+        clans: clansCache
       })
     });
     setCloudBadge(res.ok ? '[ Облако: Сохранено ]' : '[ Облако: Ошибка ' + res.status + ' ]');
@@ -246,6 +264,309 @@ async function saveAll() {
     setCloudBadge('[ Облако: Ошибка сети ]');
   }
   isSaving = false;
+}
+function getUserClan(username) {
+  if (!username) return null;
+  return clansCache.find(c => c.members.some(m => m.toLowerCase() === username.toLowerCase())) || null;
+}
+
+function openClanModal() {
+  const u = getUser();
+  if (!u || u.isSimple) return;
+  if (getUserClan(u.name)) {
+    alert('Вы уже состоте в клане! Сначала покиньте текущий клан.');
+    return;
+  }
+  document.getElementById('clanModal').style.display = 'flex';
+}
+
+function closeClanModal() {
+  document.getElementById('clanModal').style.display = 'none';
+}
+
+document.getElementById('createClanForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const u = getUser();
+  if (!u || u.isSimple || getUserClan(u.name)) return;
+
+  const name = document.getElementById('clanNameInput').value.trim();
+  const tag = document.getElementById('clanTagInput').value.trim().toUpperCase();
+  const desc = document.getElementById('clanDescInput').value.trim();
+  if (!name || !tag) return;
+
+  clansCache.forEach(c => {
+    c.requests = (c.requests || []).filter(r => r.toLowerCase() !== u.name.toLowerCase());
+  });
+
+  clansCache.push({
+    id: 'clan_' + Date.now(),
+    name: name,
+    tag: tag,
+    desc: desc,
+    leader: u.name,
+    members: [u.name],
+    requests: []
+  });
+
+  document.getElementById('clanNameInput').value = '';
+  document.getElementById('clanTagInput').value = '';
+  document.getElementById('clanDescInput').value = '';
+  closeClanModal();
+  renderClans();
+  await saveAll();
+});
+
+function renderClans() {
+  const tbody = document.getElementById('clansTableBody');
+  const createBar = document.getElementById('userCreateClanBar');
+  if (!tbody) return;
+  const u = getUser();
+  const myClan = u ? getUserClan(u.name) : null;
+
+  if (createBar) {
+    createBar.style.display = (u && !u.isSimple && !myClan) ? 'inline-block' : 'none';
+  }
+
+  if (!clansCache || clansCache.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#666;">Кланы пока не созданы.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = clansCache.map(c => {
+    const isLeader = u && c.leader.toLowerCase() === u.name.toLowerCase();
+    const isMember = u && c.members.some(m => m.toLowerCase() === u.name.toLowerCase());
+    const hasReq = u && (c.requests || []).some(r => r.toLowerCase() === u.name.toLowerCase());
+
+    let actionHtml = '';
+    if (u && !u.isSimple) {
+      if (isLeader) {
+        actionHtml += `<button class="del-btn" onclick="disbandClan('${c.id}')">[Распустить]</button>`;
+      } else if (isMember) {
+        actionHtml += `<button class="logout-btn" onclick="leaveClan('${c.id}')">[Покинуть]</button>`;
+      } else if (!myClan) {
+        if (hasReq) {
+          actionHtml += `<span class="badge badge-wait">Заявка отправлена</span>`;
+        } else {
+          actionHtml += `<button class="btn-small" onclick="applyToClan('${c.id}')">[Подать заявку]</button>`;
+        }
+      }
+      if (u.isMod && !isLeader) {
+        actionHtml += `<button class="del-btn" onclick="disbandClan('${c.id}')">[X]</button>`;
+      }
+    }
+
+    let reqListHtml = '';
+    if (isLeader && c.requests && c.requests.length > 0) {
+      reqListHtml = `<div style="margin-top:5px; padding:4px; border:1px dashed #59752d; font-size:10px;"><b>Заявки:</b> ` +
+        c.requests.map(r =>
+          `<span class="key-tag">${r} ` +
+          `<b style="color:#22c55e; cursor:pointer;" onclick="handleClanReq('${c.id}', '${r}', true)">[✔]</b> ` +
+          `<b style="color:#ef4444; cursor:pointer;" onclick="handleClanReq('${c.id}', '${r}', false)">[✖]</b></span>`
+        ).join('') + `</div>`;
+    }
+
+    const membersPreview = c.members.join(', ');
+    return `<tr class="topic-row">` +
+      `<td><b>[${c.tag}] ${c.name}</b><div class="topic-desc">${c.desc}</div><div class="topic-desc"><i>Участники: ${membersPreview}</i></div></td>` +
+      `<td><b>${c.leader}</b></td>` +
+      `<td style="text-align:center;">${c.members.length} чел.</td>` +
+      `<td style="text-align:center;">${actionHtml || '—'}${reqListHtml}</td></tr>`;
+  }).join('');
+}
+
+async function applyToClan(clanId) {
+  const u = getUser();
+  if (!u || u.isSimple || getUserClan(u.name)) return;
+  const c = clansCache.find(x => x.id === clanId);
+  if (!c) return;
+  if (!c.requests) c.requests = [];
+  if (!c.requests.some(r => r.toLowerCase() === u.name.toLowerCase())) {
+    c.requests.push(u.name);
+  }
+  renderClans();
+  await saveAll();
+}
+
+async function handleClanReq(clanId, nick, accept) {
+  const u = getUser();
+  const c = clansCache.find(x => x.id === clanId);
+  if (!u || !c || c.leader.toLowerCase() !== u.name.toLowerCase()) return;
+
+  c.requests = (c.requests || []).filter(r => r.toLowerCase() !== nick.toLowerCase());
+  if (accept && !getUserClan(nick)) {
+    c.members.push(nick);
+  }
+  renderClans();
+  await saveAll();
+}
+
+async function leaveClan(clanId) {
+  const u = getUser();
+  const c = clansCache.find(x => x.id === clanId);
+  if (!u || !c) return;
+  c.members = c.members.filter(m => m.toLowerCase() !== u.name.toLowerCase());
+  renderClans();
+  await saveAll();
+}
+
+async function disbandClan(clanId) {
+  clansCache = clansCache.filter(c => c.id !== clanId);
+  renderClans();
+  await saveAll();
+}
+function openPollModal(scope) {
+  const u = getUser();
+  if (!u || (!u.isAdm && !u.isMod)) return;
+  pollTargetScope = scope;
+  document.getElementById('pollModal').style.display = 'flex';
+}
+
+function closePollModal() {
+  document.getElementById('pollModal').style.display = 'none';
+}
+
+document.getElementById('createPollForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const u = getUser();
+  if (!u || (!u.isAdm && !u.isMod)) return;
+
+  const q = document.getElementById('pollQuestionInput').value.trim();
+  const rawOpts = document.getElementById('pollOptionsInput').value
+    .split('\n').map(x => x.trim()).filter(Boolean);
+  if (!q || rawOpts.length < 2) {
+    alert('Введите вопрос и минимум 2 варианта ответа!');
+    return;
+  }
+
+  let targetId = 'home';
+  if (pollTargetScope === 'topic') targetId = 'topic:' + currentTopic;
+  if (pollTargetScope === 'conf') targetId = 'conf:' + activeConfId;
+
+  pollsCache.push({
+    id: 'poll_' + Date.now(),
+    target: targetId,
+    author: u.name,
+    question: q,
+    anon: document.getElementById('pollAnonCheck').checked,
+    multi: document.getElementById('pollMultiCheck').checked,
+    allowCustom: document.getElementById('pollCustomCheck').checked,
+    options: rawOpts.map(txt => ({ text: txt, voters: [] }))
+  });
+
+  document.getElementById('pollQuestionInput').value = '';
+  document.getElementById('pollOptionsInput').value = '';
+  document.getElementById('pollAnonCheck').checked = false;
+  document.getElementById('pollMultiCheck').checked = false;
+  document.getElementById('pollCustomCheck').checked = false;
+  closePollModal();
+  renderAllPolls();
+  await saveAll();
+});
+
+function renderAllPolls() {
+  renderPollsForTarget('home', 'homePollsContainer');
+  if (currentTopic) renderPollsForTarget('topic:' + currentTopic, 'topicPollsContainer');
+  if (activeConfId) renderPollsForTarget('conf:' + activeConfId, 'confPollsContainer');
+}
+
+function renderPollsForTarget(targetId, containerId) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+  const u = getUser();
+  const list = pollsCache.filter(p => p.target === targetId);
+  if (list.length === 0) {
+    box.innerHTML = '';
+    return;
+  }
+
+  box.innerHTML = list.map(p => {
+    const totalVotes = p.options.reduce((sum, o) => sum + o.voters.length, 0);
+    const userVotedAny = u && p.options.some(o => o.voters.includes(u.name));
+    const canVote = u && !u.isSimple && !(p.anon && userVotedAny);
+    const delBtn = (u && (u.isAdm || u.isMod))
+      ? `<button class="del-btn" onclick="deletePoll('${p.id}')">[Удалить опрос]</button>` : '';
+
+    const tags = [
+      p.anon ? 'Аноним-режим' : 'Открытый',
+      p.multi ? 'Несколько вариантов' : 'Один вариант',
+      p.allowCustom ? 'Можно свой вариант' : ''
+    ].filter(Boolean).join(' • ');
+
+    const optsHtml = p.options.map((o, idx) => {
+      const isMine = u && o.voters.includes(u.name);
+      const pct = totalVotes > 0 ? Math.round((o.voters.length / totalVotes) * 100) : 0;
+      const stats = p.anon
+        ? (isMine ? ' <b>[Ваш голос учтён]</b>' : '')
+        : ` — <b>${o.voters.length}</b> (${pct}%)`;
+      const mark = isMine ? '☑ ' : '☐ ';
+      const clickAttr = canVote ? `onclick="votePoll('${p.id}', ${idx})"` : '';
+      const cursor = canVote ? 'cursor:pointer;' : 'opacity:0.85;';
+      return `<div ${clickAttr} style="padding:5px 8px; margin:4px 0; border:1px solid #799452; background:${isMine ? '#dce8c8' : 'rgba(128,128,128,0.1)'}; ${cursor}">` +
+        `<span>${mark}${o.text}</span>${stats}</div>`;
+    }).join('');
+
+    const customHtml = (p.allowCustom && u && !u.isSimple && !(p.anon && userVotedAny))
+      ? `<div style="margin-top:6px; display:flex; gap:5px;">` +
+        `<input type="text" id="customOpt_${p.id}" placeholder="Написать свой вариант..." style="flex:1;">` +
+        `<button class="logout-btn" onclick="addCustomPollOption('${p.id}')">+ Добавить</button></div>`
+      : '';
+
+    const anonNote = (p.anon && userVotedAny)
+      ? `<div style="font-size:10px; color:#22c55e; margin-top:4px;">Вы проголосовали в анонимном опросе.</div>` : '';
+
+    return `<div class="post-box">` +
+      `<div class="post-header"><span><b>ОПРОС:</b> ${p.question} <span style="font-size:10px; opacity:0.8;">(${tags})</span></span><span>Автор: ${p.author}${delBtn}</span></div>` +
+      `<div>${optsHtml}</div>${customHtml}${anonNote}</div>`;
+  }).join('');
+}
+
+async function votePoll(pollId, optIdx) {
+  const u = getUser();
+  if (!u || u.isSimple) return;
+  const p = pollsCache.find(x => x.id === pollId);
+  if (!p) return;
+
+  const already = p.options.some(o => o.voters.includes(u.name));
+  if (p.anon && already) return;
+
+  const targetOpt = p.options.at(optIdx);
+  if (!targetOpt) return;
+
+  if (p.multi) {
+    const pos = targetOpt.voters.indexOf(u.name);
+    if (pos >= 0) targetOpt.voters.splice(pos, 1);
+    else targetOpt.voters.push(u.name);
+  } else {
+    p.options.forEach(o => {
+      const pos = o.voters.indexOf(u.name);
+      if (pos >= 0) o.voters.splice(pos, 1);
+    });
+    targetOpt.voters.push(u.name);
+  }
+
+  renderAllPolls();
+  await saveAll();
+}
+
+async function addCustomPollOption(pollId) {
+  const u = getUser();
+  if (!u || u.isSimple) return;
+  const inp = document.getElementById('customOpt_' + pollId);
+  if (!inp) return;
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const p = pollsCache.find(x => x.id === pollId);
+  if (!p || !p.allowCustom) return;
+
+  p.options.push({ text: txt, voters: [u.name] });
+  renderAllPolls();
+  await saveAll();
+}
+
+async function deletePoll(pollId) {
+  pollsCache = pollsCache.filter(x => x.id !== pollId);
+  renderAllPolls();
+  await saveAll();
 }
 function renderServers() {
   const tbody = document.getElementById('serversMonitorBody');
@@ -310,11 +631,15 @@ function getRoomId(u1, u2) {
 
 function renderHomeTopics() {
   renderServers();
+  renderClans();
+  renderAllPolls();
   const tbody = document.getElementById('dynamicTopicsBody');
   if (!tbody) return;
   const u = getUser();
-  tbody.innerHTML = '';
+  const pollBar = document.getElementById('staffHomePollBar');
+  if (pollBar) pollBar.style.display = (u && (u.isAdm || u.isMod)) ? 'block' : 'none';
 
+  tbody.innerHTML = '';
   const descs = {
     players: 'Читы, фрикиллы и реклама серверов.',
     admins: 'Нарушения регламента администраторами.',
@@ -352,11 +677,13 @@ document.getElementById('createTopicForm').addEventListener('submit', async func
   const text = document.getElementById('newTopicFirstPost').value.trim();
   if (!title || !text) return;
 
+  const clan = getUserClan(u.name);
+  const tagPrefix = clan ? `[${clan.tag}] ` : '';
   const newId = 'topic_' + Date.now();
   topicsData[newId] = {
     title: title,
     desc: desc,
-    posts: [{ owner: u.name, author: `${u.name} [${u.role}]`, ava: u.ava || '', text: text, status: '' }]
+    posts: [{ owner: u.name, author: `${tagPrefix}${u.name} [${u.role}]`, ava: u.ava || '', text: text, status: '' }]
   };
 
   document.getElementById('newTopicTitle').value = '';
@@ -400,6 +727,115 @@ async function removeBan(type, idx) {
   if (type === 'id') bansCache.ids.splice(idx, 1);
   else bansCache.ips.splice(idx, 1);
   renderBans();
+  await saveAll();
+}
+async function createConference() {
+  const u = getUser();
+  if (!u || !u.isMod) return;
+  const inp = document.getElementById('newConfNameInput');
+  const title = inp.value.trim();
+  if (!title) return;
+  const id = 'conf_' + Date.now();
+  confsCache.push({
+    id: id,
+    title: title,
+    owner: u.name,
+    members: [u.name],
+    messages: [`<i>Модератор <b>${u.name}</b> создал конференцию «${title}»</i>`]
+  });
+  inp.value = '';
+  activeConfId = id;
+  renderConferences();
+  await saveAll();
+}
+
+function renderConferences() {
+  const u = getUser();
+  const listBox = document.getElementById('confListBox');
+  const createBar = document.getElementById('modCreateConfBar');
+  if (!listBox || !u) return;
+  if (createBar) createBar.style.display = u.isMod ? 'block' : 'none';
+
+  const visibleConfs = confsCache.filter(c =>
+    u.isMod || c.members.some(m => m.toLowerCase() === u.name.toLowerCase())
+  );
+
+  listBox.innerHTML = visibleConfs.map(c => {
+    const cls = (c.id === activeConfId) ? 'friend-item friend-active' : 'friend-item';
+    const del = u.isMod ? `<span onclick="event.stopPropagation(); deleteConference('${c.id}')" style="color:#ef4444; font-weight:bold;">[X]</span>` : '';
+    return `<div class="${cls}" onclick="selectConference('${c.id}')"><span># ${c.title}</span>${del}</div>`;
+  }).join('') || '<span style="color:#777;">Нет конференций</span>';
+
+  const active = confsCache.find(c => c.id === activeConfId);
+  const titleEl = document.getElementById('confActiveTitle');
+  const memEl = document.getElementById('confMembersBox');
+  const invBar = document.getElementById('modInviteConfBar');
+  const sendArea = document.getElementById('confSendArea');
+  const pollBtn = document.getElementById('staffConfPollBtn');
+  const logEl = document.getElementById('confChatLog');
+
+  if (!active) {
+    titleEl.textContent = 'Выберите конференцию слева';
+    memEl.innerHTML = '';
+    invBar.style.display = 'none';
+    sendArea.style.display = 'none';
+    pollBtn.style.display = 'none';
+    logEl.innerHTML = '';
+    document.getElementById('confPollsContainer').innerHTML = '';
+    return;
+  }
+
+  titleEl.textContent = `Конференция: ${active.title}`;
+  memEl.innerHTML = '<b>Участники:</b> ' + active.members.map(m => `<span class="key-tag">${m}</span>`).join('');
+  invBar.style.display = u.isMod ? 'block' : 'none';
+  sendArea.style.display = 'block';
+  pollBtn.style.display = (u.isAdm || u.isMod) ? 'inline-block' : 'none';
+  renderPollsForTarget('conf:' + active.id, 'confPollsContainer');
+
+  logEl.innerHTML = active.messages.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('');
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function selectConference(id) {
+  activeConfId = id;
+  renderConferences();
+}
+
+async function deleteConference(id) {
+  confsCache = confsCache.filter(c => c.id !== id);
+  if (activeConfId === id) activeConfId = '';
+  renderConferences();
+  await saveAll();
+}
+
+async function inviteToConference() {
+  const u = getUser();
+  if (!u || !u.isMod || !activeConfId) return;
+  const inp = document.getElementById('inviteConfNickInput');
+  const nick = inp.value.trim();
+  if (!nick) return;
+  const conf = confsCache.find(c => c.id === activeConfId);
+  if (!conf) return;
+  if (!conf.members.some(m => m.toLowerCase() === nick.toLowerCase())) {
+    conf.members.push(nick);
+    conf.messages.push(`<i><b>${u.name}</b> пригласил участника <b>${nick}</b></i>`);
+  }
+  inp.value = '';
+  renderConferences();
+  await saveAll();
+}
+
+async function sendConfMsg() {
+  const u = getUser();
+  if (!u || u.isSimple || !activeConfId) return;
+  const inp = document.getElementById('confMsgInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const conf = confsCache.find(c => c.id === activeConfId);
+  if (!conf) return;
+  conf.messages.push(`<b>${u.name}:</b> ${txt}`);
+  inp.value = '';
+  renderConferences();
   await saveAll();
 }
 function uploadAvatar(event) {
@@ -504,9 +940,11 @@ function renderUser() {
   if (u) {
     const st = u.hideStatus ? ' [Невидимка]' : ' [Онлайн]';
     const ava = u.ava || DEFAULT_AVA;
+    const clan = getUserClan(u.name);
+    const clanBadge = clan ? ` • Клан: <b>[${clan.tag}] ${clan.name}</b>` : '';
     document.getElementById('savedUserText').innerHTML =
       `<img src="${ava}" class="ava-mini">` +
-      `<span>Ник: <b>${u.name}</b> • Группа: <b>${u.role}</b>${st}</span>`;
+      `<span>Ник: <b>${u.name}</b> • Группа: <b>${u.role}</b>${clanBadge}${st}</span>`;
     p.style.display = 'flex';
     b.textContent = '[ Сменить ник ]';
     if (bar) bar.style.display = u.isMod ? 'block' : 'none';
@@ -565,6 +1003,7 @@ document.getElementById('authForm').addEventListener('submit', async function(e)
   closeModal();
   if (currentTopic) openTopic(currentTopic);
 });
+
 function showHome() {
   currentTopic = '';
   activeFriend = '';
@@ -615,6 +1054,12 @@ function openCabinet() {
   document.getElementById('cabAvatarImg').src = u.ava || DEFAULT_AVA;
   const st = u.hideStatus ? 'Скрыт (Невидимка)' : 'Виден всем (Онлайн)';
   document.getElementById('cabProfileInfo').innerHTML = `<b>Ник:</b> ${u.name}<br><b>Группа:</b> ${u.role}<br><b>Статус:</b> ${st}`;
+
+  const clan = getUserClan(u.name);
+  document.getElementById('cabClanInfo').innerHTML = clan
+    ? `<b>Клан:</b> [${clan.tag}] ${clan.name} (${clan.leader === u.name ? 'Лидер' : 'Участник'})`
+    : `<b>Клан:</b> Не состоит`;
+
   document.getElementById('userBioInput').value = u.bio || '';
 
   const isStaff = (u.isAdm || u.isMod);
@@ -627,12 +1072,11 @@ function openCabinet() {
   document.getElementById('avaUploadBlock').style.display = u.isSimple ? 'none' : 'block';
   document.getElementById('bioBlock').style.display = u.isSimple ? 'none' : 'block';
   document.getElementById('cabSimpleBlocked').style.display = u.isSimple ? 'block' : 'none';
-  document.getElementById('cabContent').style.display = u.isSimple ? 'none' : 'flex';
+  document.getElementById('cabContent').style.display = u.isSimple ? 'none' : 'block';
 
-  if (!u.isSimple) { renderFriends(); renderFoes(); }
+  if (!u.isSimple) { renderFriends(); renderFoes(); renderConferences(); }
   syncFromCloud();
 }
-
 function renderFriends() {
   const box = document.getElementById('friendsListBox');
   if (!box) return;
@@ -714,6 +1158,7 @@ async function addFoe() {
     inp.value = '';
   }
 }
+
 async function delFriend(idx) {
   const list = getFriends();
   if (list[idx] === activeFriend) {
@@ -776,6 +1221,9 @@ function openTopic(id) {
   document.getElementById('topicHeaderTitle').textContent = t.title;
   document.getElementById('breadcrumbs').innerHTML = `<a onclick="showHome()">Список форумов</a> &raquo; ${t.title}`;
 
+  const pollBtn = document.getElementById('staffTopicPollBtn');
+  if (pollBtn) pollBtn.style.display = (u && (u.isAdm || u.isMod)) ? 'inline-block' : 'none';
+
   const warn = document.getElementById('simpleWarnText');
   const area = document.getElementById('postText');
   const box = document.getElementById('replyBox');
@@ -787,6 +1235,7 @@ function openTopic(id) {
     warn.style.display = (u && u.isSimple && id === 'admins') ? 'block' : 'none';
     area.disabled = (u && u.isSimple && id === 'admins');
   }
+  renderPollsForTarget('topic:' + id, 'topicPollsContainer');
   renderPosts();
   syncFromCloud();
 }
@@ -840,9 +1289,11 @@ function addPost() {
   const text = document.getElementById('postText').value.trim();
   if (!text) return;
 
+  const clan = getUserClan(u.name);
+  const tagPrefix = clan ? `[${clan.tag}] ` : '';
   const st = (currentTopic === 'players' || currentTopic === 'admins') ? 'Жалоба рассматривается' : '';
   topicsData[currentTopic].posts.push({
-    owner: u.name, author: `${u.name} [${u.role}]`, ava: u.ava || '', bio: u.bio || '', text: text, status: st
+    owner: u.name, author: `${tagPrefix}${u.name} [${u.role}]`, ava: u.ava || '', bio: u.bio || '', text: text, status: st
   });
   document.getElementById('postText').value = '';
   document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
