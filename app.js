@@ -1,5 +1,6 @@
-const NTFY_TOPIC = 'gamepasta_sync_axelrun00_v2';
-const NTFY_URL = 'https://ntfy.sh' + NTFY_TOPIC;
+const MQTT_BROKER = 'wss://broker.emqx.io:8084/mqtt';
+const MQTT_TOPIC = 'gamepasta/axelrun00/sync_db_v1';
+let mqttClient = null;
 
 const WIN7_ICONS = {
   news:
@@ -56,10 +57,7 @@ const WIN7_ICONS = {
 };
 
 const ICON_CYCLE = ['folder', 'news', 'shield', 'warn', 'alert', 'help', 'gear'];
-
-function getWin7Icon(type) {
-  return WIN7_ICONS[type] || WIN7_ICONS.folder;
-}
+function getWin7Icon(type) { return WIN7_ICONS[type] || WIN7_ICONS.folder; }
 function applySiteTheme(mode) {
   const isMod = (mode === 'modernic');
   document.body.classList.toggle('modernic', isMod);
@@ -201,79 +199,93 @@ function setCloudBadge(txt) {
   if (el) el.textContent = txt;
 }
 
-async function forceSyncNow() {
-  setCloudBadge('[ Облако: Отправка... ]');
-  await saveAll();
-}
+function initMqttSync() {
+  if (typeof mqtt === 'undefined') {
+    setCloudBadge('[ Облако: Нет модуля ]');
+    return;
+  }
+  if (mqttClient) return;
 
-async function syncFromCloud() {
-  if (isSaving) return;
-  try {
-    const res = await fetch(NTFY_URL + '/json?poll=1&since=24h');
-    if (!res.ok) { setCloudBadge('[ Облако: Ошибка ' + res.status + ' ]'); return; }
-    const rawText = await res.text();
-    if (isSaving) return;
-    const lines = rawText.trim().split('\n').filter(Boolean);
-    let latestState = null;
+  setCloudBadge('[ Облако: Подключение... ]');
+  mqttClient = mqtt.connect(MQTT_BROKER, {
+    clientId: 'gp_' + Math.random().toString(16).slice(2, 10),
+    clean: true,
+    reconnectPeriod: 3000
+  });
 
-    for (let i = lines.length - 1; i >= 0; i--) {
-      try {
-        const packet = JSON.parse(lines.at(i));
-        if (packet && packet.message) {
-          const parsed = JSON.parse(packet.message);
-          if (parsed && parsed.topics) { latestState = parsed; break; }
-        }
-      } catch (e) {}
-    }
-
-    if (latestState && (!latestState.ts || latestState.ts >= lastSyncTs)) {
-      lastSyncTs = latestState.ts || Date.now();
-      topicsData = latestState.topics;
-      if (latestState.keys) keysCache = latestState.keys;
-      if (latestState.pms) pmsCache = latestState.pms;
-      if (latestState.users) usersCache = latestState.users;
-      if (latestState.social) socialCache = latestState.social;
-      if (latestState.bans) bansCache = latestState.bans;
-      if (Array.isArray(latestState.servers)) serversCache = latestState.servers;
-      if (Array.isArray(latestState.confs)) confsCache = latestState.confs;
-      if (Array.isArray(latestState.polls)) pollsCache = latestState.polls;
-      if (Array.isArray(latestState.clans)) clansCache = latestState.clans;
-      saveLocalBackup();
-    }
+  mqttClient.on('connect', () => {
     setCloudBadge('[ Облако: OK ]');
-    renderHomeTopics();
-    checkServersPing();
-    if (currentTopic && topicsData[currentTopic]) renderPosts();
-    if (activeFriend) renderChat();
-    if (document.getElementById('cabinetView').style.display === 'block') {
-      renderFriends(); renderFoes(); renderConferences();
-    }
-  } catch (e) { setCloudBadge('[ Облако: Ошибка сети ]'); }
+    mqttClient.subscribe(MQTT_TOPIC);
+  });
+
+  mqttClient.on('error', () => {
+    setCloudBadge('[ Облако: Ошибка сети ]');
+  });
+
+  mqttClient.on('message', (topic, message) => {
+    if (isSaving) return;
+    try {
+      const d = JSON.parse(message.toString());
+      if (d && d.topics && (!d.ts || d.ts > lastSyncTs)) {
+        lastSyncTs = d.ts || Date.now();
+        topicsData = d.topics;
+        if (d.keys) keysCache = d.keys;
+        if (d.pms) pmsCache = d.pms;
+        if (d.users) usersCache = d.users;
+        if (d.social) socialCache = d.social;
+        if (d.bans) bansCache = d.bans;
+        if (Array.isArray(d.servers)) serversCache = d.servers;
+        if (Array.isArray(d.confs)) confsCache = d.confs;
+        if (Array.isArray(d.polls)) pollsCache = d.polls;
+        if (Array.isArray(d.clans)) clansCache = d.clans;
+        saveLocalBackup();
+
+        renderHomeTopics();
+        if (currentTopic && topicsData[currentTopic]) renderPosts();
+        if (activeFriend) renderChat();
+        if (document.getElementById('cabinetView').style.display === 'block') {
+          renderFriends(); renderFoes(); renderConferences();
+        }
+      }
+    } catch (e) {}
+  });
+}
+function forceSyncNow() {
+  setCloudBadge('[ Облако: Отправка... ]');
+  saveAll();
 }
 
-async function saveAll() {
+function syncFromCloud() {
+  initMqttSync();
+  renderHomeTopics();
+}
+
+function saveAll() {
   lastSyncTs = Date.now();
   saveLocalBackup();
+  if (!mqttClient || !mqttClient.connected) {
+    initMqttSync();
+    return;
+  }
   isSaving = true;
-  try {
-    const cleanTopics = {};
-    Object.keys(topicsData).forEach(k => {
-      cleanTopics[k] = {
-        title: topicsData[k].title, icon: topicsData[k].icon || 'folder',
-        desc: topicsData[k].desc || '', posts: topicsData[k].posts.map(p => ({ ...p, ava: '' }))
-      };
-    });
-    const res = await fetch(NTFY_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        ts: lastSyncTs, topics: cleanTopics, keys: keysCache, pms: pmsCache,
-        users: usersCache, social: socialCache, bans: bansCache,
-        servers: serversCache, confs: confsCache, polls: pollsCache, clans: clansCache
-      })
-    });
-    setCloudBadge(res.ok ? '[ Облако: Сохранено ]' : '[ Облако: Ошибка ' + res.status + ' ]');
-  } catch (e) { setCloudBadge('[ Облако: Ошибка сети ]'); }
-  isSaving = false;
+  const cleanTopics = {};
+  Object.keys(topicsData).forEach(k => {
+    cleanTopics[k] = {
+      title: topicsData[k].title, icon: topicsData[k].icon || 'folder',
+      desc: topicsData[k].desc || '', posts: topicsData[k].posts.map(p => ({ ...p, ava: '' }))
+    };
+  });
+
+  const payload = JSON.stringify({
+    ts: lastSyncTs, topics: cleanTopics, keys: keysCache, pms: pmsCache,
+    users: usersCache, social: socialCache, bans: bansCache,
+    servers: serversCache, confs: confsCache, polls: pollsCache, clans: clansCache
+  });
+
+  mqttClient.publish(MQTT_TOPIC, payload, { retain: true, qos: 1 }, (err) => {
+    setCloudBadge(err ? '[ Облако: Ошибка ]' : '[ Облако: Сохранено ]');
+    isSaving = false;
+  });
 }
 function getUserClan(username) {
   if (!username) return null;
@@ -289,7 +301,7 @@ function openClanModal() {
 
 function closeClanModal() { document.getElementById('clanModal').style.display = 'none'; }
 
-document.getElementById('createClanForm').addEventListener('submit', async function(e) {
+document.getElementById('createClanForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const u = getUser();
   if (!u || u.isSimple || getUserClan(u.name)) return;
@@ -306,7 +318,7 @@ document.getElementById('createClanForm').addEventListener('submit', async funct
   document.getElementById('clanDescInput').value = '';
   closeClanModal();
   renderClans();
-  await saveAll();
+  saveAll();
 });
 
 function renderClans() {
@@ -342,7 +354,7 @@ function renderClans() {
       `<td><b>${c.leader}</b></td><td style="text-align:center;">${c.members.length} чел.</td><td style="text-align:center;">${act || '—'}${reqs}</td></tr>`;
   }).join('');
 }
-async function applyToClan(clanId) {
+function applyToClan(clanId) {
   const u = getUser();
   if (!u || u.isSimple || getUserClan(u.name)) return;
   const c = clansCache.find(x => x.id === clanId);
@@ -350,32 +362,32 @@ async function applyToClan(clanId) {
   if (!c.requests) c.requests = [];
   if (!c.requests.some(r => r.toLowerCase() === u.name.toLowerCase())) c.requests.push(u.name);
   renderClans();
-  await saveAll();
+  saveAll();
 }
 
-async function handleClanReq(clanId, nick, accept) {
+function handleClanReq(clanId, nick, accept) {
   const u = getUser();
   const c = clansCache.find(x => x.id === clanId);
   if (!u || !c || c.leader.toLowerCase() !== u.name.toLowerCase()) return;
   c.requests = (c.requests || []).filter(r => r.toLowerCase() !== nick.toLowerCase());
   if (accept && !getUserClan(nick)) c.members.push(nick);
   renderClans();
-  await saveAll();
+  saveAll();
 }
 
-async function leaveClan(clanId) {
+function leaveClan(clanId) {
   const u = getUser();
   const c = clansCache.find(x => x.id === clanId);
   if (!u || !c) return;
   c.members = c.members.filter(m => m.toLowerCase() !== u.name.toLowerCase());
   renderClans();
-  await saveAll();
+  saveAll();
 }
 
-async function disbandClan(clanId) {
+function disbandClan(clanId) {
   clansCache = clansCache.filter(c => c.id !== clanId);
   renderClans();
-  await saveAll();
+  saveAll();
 }
 function openPollModal(scope) {
   const u = getUser();
@@ -386,7 +398,7 @@ function openPollModal(scope) {
 
 function closePollModal() { document.getElementById('pollModal').style.display = 'none'; }
 
-document.getElementById('createPollForm').addEventListener('submit', async function(e) {
+document.getElementById('createPollForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const u = getUser();
   if (!u || (!u.isAdm && !u.isMod)) return;
@@ -413,7 +425,7 @@ document.getElementById('createPollForm').addEventListener('submit', async funct
   document.getElementById('pollCustomCheck').checked = false;
   closePollModal();
   renderAllPolls();
-  await saveAll();
+  saveAll();
 });
 
 function renderAllPolls() {
@@ -453,7 +465,7 @@ function renderPollsForTarget(targetId, containerId) {
   }).join('');
 }
 
-async function votePoll(pollId, optIdx) {
+function votePoll(pollId, optIdx) {
   const u = getUser();
   if (!u || u.isSimple) return;
   const p = pollsCache.find(x => x.id === pollId);
@@ -469,10 +481,10 @@ async function votePoll(pollId, optIdx) {
     targetOpt.voters.push(u.name);
   }
   renderAllPolls();
-  await saveAll();
+  saveAll();
 }
 
-async function addCustomPollOption(pollId) {
+function addCustomPollOption(pollId) {
   const u = getUser();
   if (!u || u.isSimple) return;
   const inp = document.getElementById('customOpt_' + pollId);
@@ -481,13 +493,13 @@ async function addCustomPollOption(pollId) {
   if (!p || !p.allowCustom) return;
   p.options.push({ text: inp.value.trim(), voters: [u.name] });
   renderAllPolls();
-  await saveAll();
+  saveAll();
 }
 
-async function deletePoll(pollId) {
+function deletePoll(pollId) {
   pollsCache = pollsCache.filter(x => x.id !== pollId);
   renderAllPolls();
-  await saveAll();
+  saveAll();
 }
 function renderServers() {
   const tbody = document.getElementById('serversMonitorBody');
@@ -514,7 +526,7 @@ function renderServers() {
 function openServerModal() { document.getElementById('addServerModal').style.display = 'flex'; }
 function closeServerModal() { document.getElementById('addServerModal').style.display = 'none'; }
 
-document.getElementById('createServerForm').addEventListener('submit', async function(e) {
+document.getElementById('createServerForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const u = getUser();
   if (!u || !u.isMod) return;
@@ -528,109 +540,16 @@ document.getElementById('createServerForm').addEventListener('submit', async fun
   document.getElementById('srvIp').value = '';
   closeServerModal();
   renderServers();
-  await saveAll();
+  saveAll();
   checkServersPing();
 });
 
-async function deleteServer(idx) {
+function deleteServer(idx) {
   serversCache.splice(idx, 1);
   renderServers();
-  await saveAll();
+  saveAll();
 }
-function getRoomId(u1, u2) { return [u1.toLowerCase(), u2.toLowerCase()].sort().join('__'); }
-
-async function cycleTopicIcon(key) {
-  const u = getUser();
-  if (!u || !u.isMod || !topicsData[key]) return;
-  const cur = topicsData[key].icon || 'folder';
-  topicsData[key].icon = ICON_CYCLE.at((ICON_CYCLE.indexOf(cur) + 1) % ICON_CYCLE.length);
-  renderHomeTopics();
-  await saveAll();
-}
-
-function renderHomeTopics() {
-  renderServers(); renderClans(); renderAllPolls();
-  const tbody = document.getElementById('dynamicTopicsBody');
-  if (!tbody) return;
-  const u = getUser();
-  const pollBar = document.getElementById('staffHomePollBar');
-  if (pollBar) pollBar.style.display = (u && (u.isAdm || u.isMod)) ? 'block' : 'none';
-
-  const newsCell = document.getElementById('staticRow-news');
-  if (newsCell && topicsData.news) {
-    const ico = getWin7Icon(topicsData.news.icon || 'news');
-    const chg = (u && u.isMod) ? `<button class="logout-btn" style="margin-left:6px; padding:1px 5px; font-size:10px;" onclick="cycleTopicIcon('news')">[Значок]</button>` : '';
-    newsCell.innerHTML = `${ico}<a class="topic-title" onclick="openTopic('news')">Новости</a>${chg}<div class="topic-desc">Обновления серверов и события.</div>`;
-  }
-  const rulesCell = document.getElementById('staticRow-rules');
-  if (rulesCell && topicsData.rules) {
-    const ico = getWin7Icon(topicsData.rules.icon || 'shield');
-    const chg = (u && u.isMod) ? `<button class="logout-btn" style="margin-left:6px; padding:1px 5px; font-size:10px;" onclick="cycleTopicIcon('rules')">[Значок]</button>` : '';
-    rulesCell.innerHTML = `${ico}<a class="topic-title" onclick="openTopic('rules')">Правила</a>${chg}<div class="topic-desc">Строгий устав сервера и регламент проверок.</div>`;
-  }
-
-  tbody.innerHTML = '';
-  const descs = { players: 'Читы, фрикиллы и реклама серверов.', admins: 'Нарушения регламента администраторами.', faq: 'Помощь новичкам и заявки на админку.' };
-  const defIcons = { players: 'warn', admins: 'alert', faq: 'help' };
-
-  Object.keys(topicsData).forEach(key => {
-    if (key === 'news' || key === 'rules') return;
-    const t = topicsData[key];
-    const ico = getWin7Icon(t.icon || defIcons[key] || 'folder');
-    const chg = (u && u.isMod) ? `<button class="logout-btn" style="margin-left:6px; padding:1px 5px; font-size:10px;" onclick="cycleTopicIcon('${key}')">[Значок]</button>` : '';
-    const delBtn = (u && u.isMod && !['players', 'admins', 'faq'].includes(key)) ? `<button class="del-btn" onclick="deleteCustomTopic('${key}')">[Удалить тему]</button>` : '';
-    tbody.innerHTML += `<tr class="topic-row"><td>${ico}<a class="topic-title" onclick="openTopic('${key}')">${t.title}</a>${chg}${delBtn}<div class="topic-desc">${t.desc || descs[key] || 'Обсуждение темы.'}</div></td><td style="text-align:center;" id="count-${key}">${t.posts.length}</td></tr>`;
-  });
-  if (topicsData.news) document.getElementById('count-news').textContent = topicsData.news.posts.length;
-  if (topicsData.rules) document.getElementById('count-rules').textContent = topicsData.rules.posts.length;
-}
-
-function openNewTopicModal() { document.getElementById('newTopicModal').style.display = 'flex'; }
-function closeNewTopicModal() { document.getElementById('newTopicModal').style.display = 'none'; }
-
-document.getElementById('createTopicForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const u = getUser();
-  if (!u || !u.isMod) return;
-  const title = document.getElementById('newTopicTitle').value.trim();
-  const icon = document.getElementById('newTopicIcon').value || 'folder';
-  const desc = document.getElementById('newTopicDesc').value.trim();
-  const text = document.getElementById('newTopicFirstPost').value.trim();
-  if (!title || !text) return;
-  const clan = getUserClan(u.name);
-  topicsData['topic_' + Date.now()] = {
-    title, icon, desc,
-    posts: [{ owner: u.name, author: `${clan ? `[${clan.tag}] ` : ''}${u.name} [${u.role}]`, ava: u.ava || '', text, status: '' }]
-  };
-  document.getElementById('newTopicTitle').value = '';
-  document.getElementById('newTopicDesc').value = '';
-  document.getElementById('newTopicFirstPost').value = '';
-  closeNewTopicModal();
-  renderHomeTopics();
-  await saveAll();
-});
-
-async function deleteCustomTopic(key) { delete topicsData[key]; renderHomeTopics(); await saveAll(); }
-
-function renderBans() {
-  document.getElementById('bannedIdsList').innerHTML = bansCache.ids.map((item, i) => `<span class="key-tag">${item} <b style="color:#ef4444; cursor:pointer;" onclick="removeBan('id', ${i})">[X]</b></span>`).join('') || '<span style="color:#666;">Нет банов</span>';
-  document.getElementById('bannedIpsList').innerHTML = bansCache.ips.map((item, i) => `<span class="key-tag">${item} <b style="color:#ef4444; cursor:pointer;" onclick="removeBan('ip', ${i})">[X]</b></span>`).join('') || '<span style="color:#666;">Нет банов</span>';
-}
-
-async function addBan(type) {
-  const inp = document.getElementById(type === 'id' ? 'banIdInput' : 'banIpInput');
-  const val = inp.value.trim();
-  if (!val) return;
-  if (type === 'id' && !bansCache.ids.includes(val)) bansCache.ids.push(val);
-  if (type === 'ip' && !bansCache.ips.includes(val)) bansCache.ips.push(val);
-  inp.value = ''; renderBans(); await saveAll();
-}
-
-async function removeBan(type, idx) {
-  if (type === 'id') bansCache.ids.splice(idx, 1); else bansCache.ips.splice(idx, 1);
-  renderBans(); await saveAll();
-}
-async function createConference() {
+function createConference() {
   const u = getUser();
   if (!u || !u.isMod) return;
   const inp = document.getElementById('newConfNameInput');
@@ -638,7 +557,7 @@ async function createConference() {
   if (!title) return;
   const id = 'conf_' + Date.now();
   confsCache.push({ id, title, owner: u.name, members: [u.name], messages: [`<i>Модератор <b>${u.name}</b> создал конференцию «${title}»</i>`] });
-  inp.value = ''; activeConfId = id; renderConferences(); await saveAll();
+  inp.value = ''; activeConfId = id; renderConferences(); saveAll();
 }
 
 function renderConferences() {
@@ -681,9 +600,9 @@ function renderConferences() {
 }
 
 function selectConference(id) { activeConfId = id; renderConferences(); }
-async function deleteConference(id) { confsCache = confsCache.filter(c => c.id !== id); if (activeConfId === id) activeConfId = ''; renderConferences(); await saveAll(); }
+function deleteConference(id) { confsCache = confsCache.filter(c => c.id !== id); if (activeConfId === id) activeConfId = ''; renderConferences(); saveAll(); }
 
-async function inviteToConference() {
+function inviteToConference() {
   const u = getUser();
   if (!u || !u.isMod || !activeConfId) return;
   const inp = document.getElementById('inviteConfNickInput');
@@ -694,10 +613,10 @@ async function inviteToConference() {
     conf.members.push(nick);
     conf.messages.push(`<i><b>${u.name}</b> пригласил участника <b>${nick}</b></i>`);
   }
-  inp.value = ''; renderConferences(); await saveAll();
+  inp.value = ''; renderConferences(); saveAll();
 }
 
-async function sendConfMsg() {
+function sendConfMsg() {
   const u = getUser();
   if (!u || u.isSimple || !activeConfId) return;
   const inp = document.getElementById('confMsgInput');
@@ -705,7 +624,7 @@ async function sendConfMsg() {
   const conf = confsCache.find(c => c.id === activeConfId);
   if (!txt || !conf) return;
   conf.messages.push(`<b>${u.name}:</b> ${txt}`);
-  inp.value = ''; renderConferences(); await saveAll();
+  inp.value = ''; renderConferences(); saveAll();
 }
 function uploadAvatar(event) {
   const file = event.target.files.item(0);
@@ -731,15 +650,15 @@ function resetAvatar() {
   u.ava = ''; localStorage.setItem('gamepasta_user', JSON.stringify(u)); renderUser(); openCabinet();
 }
 
-async function createNewKey(type) {
+function createNewKey(type) {
   const code = `GP-${type}-${Math.floor(1000 + Math.random() * 9000)}-KEY`;
   if (type === 'ADM') keysCache.adm.push(code); else keysCache.mod.push(code);
-  renderKeysList(); alert(`Создан ключ (${type}): ${code}`); await saveAll();
+  renderKeysList(); alert(`Создан ключ (${type}): ${code}`); saveAll();
 }
 
-async function deleteKey(type, idx) {
+function deleteKey(type, idx) {
   if (type === 'ADM') keysCache.adm.splice(idx, 1); else keysCache.mod.splice(idx, 1);
-  renderKeysList(); await saveAll();
+  renderKeysList(); saveAll();
 }
 
 function renderKeysList() {
@@ -767,134 +686,24 @@ function toggleSimple() {
 function toggleAdmin() { document.getElementById('adminCode').disabled = document.getElementById('noCodeCheck').checked; }
 function toggleMod() { document.getElementById('modBox').style.display = document.getElementById('modCheck').checked ? 'block' : 'none'; }
 function toggleLink() { document.getElementById('linkBox').style.display = document.getElementById('linkCheck').checked ? 'block' : 'none'; }
-function getUser() { const r = localStorage.getItem('gamepasta_user'); return r ? JSON.parse(r) : null; }
-
-function renderUser() {
-  const u = getUser();
-  const p = document.getElementById('savedUserPanel');
-  const b = document.getElementById('openLoginBtn');
-  const bar = document.getElementById('modCreateTopicBar');
-  if (u) {
-    const clan = getUserClan(u.name);
-    const clanBadge = clan ? ` • Клан: <b>[${clan.tag}] ${clan.name}</b>` : '';
-    document.getElementById('savedUserText').innerHTML = `<img src="${u.ava || DEFAULT_AVA}" class="ava-mini"><span>Ник: <b>${u.name}</b> • Группа: <b>${u.role}</b>${clanBadge}${u.hideStatus ? ' [Невидимка]' : ' [Онлайн]'}</span>`;
-    p.style.display = 'flex'; b.textContent = '[ Сменить ник ]';
-    if (bar) bar.style.display = u.isMod ? 'block' : 'none';
-  } else {
-    p.style.display = 'none'; b.textContent = '[ Вход / Регистрация ]';
-    if (bar) bar.style.display = 'none';
-  }
-  renderHomeTopics();
-}
-
-function logoutUser() { localStorage.removeItem('gamepasta_user'); renderUser(); showHome(); }
-
-document.getElementById('authForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const name = document.getElementById('username').value.trim();
-  const isSimple = document.getElementById('simpleAccCheck').checked;
-  const noCode = document.getElementById('noCodeCheck').checked;
-  const admVal = document.getElementById('adminCode').value.trim();
-  const isModCheck = document.getElementById('modCheck').checked;
-  const modVal = document.getElementById('modCode').value.trim();
-  const hideStatus = document.getElementById('hideStatusCheck').checked;
-  let isAdm = false, isMod = false;
-
-  if (!isSimple && !noCode) { if (!keysCache.adm.includes(admVal)) { alert('ОШИБКА: Неверный код администрации!'); return; } isAdm = true; }
-  if (!isSimple && isModCheck) { if (!keysCache.mod.includes(modVal)) { alert('ОШИБКА: Неверный код модератора!'); return; } isMod = true; }
-
-  let role = 'Обычный игрок';
-  if (isSimple) role = 'Простой аккаунт';
-  else if (isAdm && isMod) role = 'Главный Админ-Модератор';
-  else if (isMod) role = 'Админ-модератор';
-  else if (isAdm) role = 'Админ-игрок [На проверке]';
-
-  const old = getUser();
-  const ava = (old && old.name === name && !isSimple) ? (old.ava || '') : '';
-  const bio = (old && old.name === name && !isSimple) ? (old.bio || '') : '';
-  localStorage.setItem('gamepasta_user', JSON.stringify({ name, role, isSimple, isAdm, isMod, hideStatus, ava, bio }));
-
-  if (!isSimple && !usersCache.some(u => u.toLowerCase() === name.toLowerCase())) { usersCache.push(name); await saveAll(); }
-  renderUser(); closeModal();
-  if (currentTopic) openTopic(currentTopic);
-});
-
-function showHome() {
-  currentTopic = ''; activeFriend = '';
-  document.getElementById('homeView').style.display = 'block';
-  document.getElementById('topicView').style.display = 'none';
-  document.getElementById('cabinetView').style.display = 'none';
-  document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Главное меню';
-  syncFromCloud();
-}
-
-function getUserSocial() {
-  const u = getUser();
-  if (!u) return { friends: ['Lakar', 'Модератор'], foes: [] };
-  const key = u.name.toLowerCase();
-  if (!socialCache[key]) socialCache[key] = { friends: ['Lakar', 'Модератор'], foes: [] };
-  return socialCache[key];
-}
-
-function getFriends() { return getUserSocial().friends; }
-function getFoes() { return getUserSocial().foes; }
-
-async function saveSocialData(friendsArr, foesArr) {
-  const u = getUser();
-  if (!u) return;
-  socialCache[u.name.toLowerCase()] = { friends: friendsArr, foes: foesArr };
-  await saveAll();
-}
-
-function saveBio() {
-  const u = getUser();
-  if (!u || u.isSimple) return;
-  u.bio = document.getElementById('userBioInput').value.trim();
-  localStorage.setItem('gamepasta_user', JSON.stringify(u));
-  const note = document.getElementById('bioSavedNote');
-  note.textContent = ' Сохранено!';
-  setTimeout(() => { note.textContent = ''; }, 2500);
-}
-
-function openCabinet() {
-  const u = getUser();
-  if (!u) { openModal(); return; }
-  currentTopic = '';
-  document.getElementById('homeView').style.display = 'none';
-  document.getElementById('topicView').style.display = 'none';
-  document.getElementById('cabinetView').style.display = 'block';
-  document.getElementById('breadcrumbs').innerHTML = '<a onclick="showHome()">Список форумов</a> &raquo; Личный раздел';
-
-  document.getElementById('cabAvatarImg').src = u.ava || DEFAULT_AVA;
-  document.getElementById('cabProfileInfo').innerHTML = `<b>Ник:</b> ${u.name}<br><b>Группа:</b> ${u.role}<br><b>Статус:</b> ${u.hideStatus ? 'Скрыт (Невидимка)' : 'Виден всем (Онлайн)'}`;
-  const clan = getUserClan(u.name);
-  document.getElementById('cabClanInfo').innerHTML = clan ? `<b>Клан:</b> [${clan.tag}] ${clan.name} (${clan.leader === u.name ? 'Лидер' : 'Участник'})` : `<b>Клан:</b> Не состоит`;
-  document.getElementById('userBioInput').value = u.bio || '';
-
-  const isStaff = (u.isAdm || u.isMod);
-  document.getElementById('adminBanPanel').style.display = isStaff ? 'block' : 'none';
-  if (isStaff) renderBans();
-  document.getElementById('keygenPanel').style.display = u.isMod ? 'block' : 'none';
-  if (u.isMod) renderKeysList();
-
-  document.getElementById('avaUploadBlock').style.display = u.isSimple ? 'none' : 'block';
-  document.getElementById('bioBlock').style.display = u.isSimple ? 'none' : 'block';
-  document.getElementById('cabSimpleBlocked').style.display = u.isSimple ? 'block' : 'none';
-  document.getElementById('cabContent').style.display = u.isSimple ? 'none' : 'block';
-
-  if (!u.isSimple) { renderFriends(); renderFoes(); renderConferences(); }
-  syncFromCloud();
-}
 function renderFriends() {
   const box = document.getElementById('friendsListBox');
   if (!box) return;
-  box.innerHTML = getFriends().map((f, idx) => `<div class="${(f === activeFriend) ? 'friend-item friend-active' : 'friend-item'}" onclick="selectFriend('${f}')"><span>${f}</span><span onclick="event.stopPropagation(); delFriend(${idx})" style="color:#ef4444; font-weight:bold;">[X]</span></div>`).join('');
+  box.innerHTML = getFriends().map((f, idx) => {
+    const cls = (f === activeFriend) ? 'friend-item friend-active' : 'friend-item';
+    return `<div class="${cls}" onclick="selectFriend('${f}')">` +
+      `<span>${f}</span>` +
+      `<span onclick="event.stopPropagation(); delFriend(${idx})" style="color:#ef4444; font-weight:bold;">[X]</span></div>`;
+  }).join('');
 }
 
 function renderFoes() {
   const box = document.getElementById('foesListBox');
   if (!box) return;
-  box.innerHTML = getFoes().map((f, idx) => `<div class="foe-item"><span>${f}</span><span onclick="delFoe(${idx})" style="color:#ef4444; font-weight:bold; cursor:pointer;">[X]</span></div>`).join('');
+  box.innerHTML = getFoes().map((f, idx) =>
+    `<div class="foe-item"><span>${f}</span>` +
+    `<span onclick="delFoe(${idx})" style="color:#ef4444; font-weight:bold; cursor:pointer;">[X]</span></div>`
+  ).join('');
 }
 
 function setStatusText(elId, msg, isErr) {
@@ -905,61 +714,96 @@ function setStatusText(elId, msg, isErr) {
   setTimeout(() => { el.textContent = ''; }, 3000);
 }
 
-async function addFriend() {
+function addFriend() {
   const inp = document.getElementById('newFriendInput');
   const raw = inp.value.trim();
   if (!raw) return;
   const me = getUser();
-  if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('friendStatusMsg', 'Нельзя добавить себя', true); return; }
+  if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+    setStatusText('friendStatusMsg', 'Нельзя добавить себя', true);
+    return;
+  }
   const existing = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
   const friendName = existing || raw;
   if (!existing) usersCache.push(friendName);
 
   const list = getFriends();
   if (!list.some(x => x.toLowerCase() === friendName.toLowerCase())) {
-    list.push(friendName); inp.value = ''; renderFriends();
+    list.push(friendName);
+    inp.value = '';
+    renderFriends();
     setStatusText('friendStatusMsg', `Добавлен: ${friendName}`, false);
-    await saveSocialData(list, getFoes());
-  } else { inp.value = ''; setStatusText('friendStatusMsg', 'Уже в друзьях', true); }
+    saveSocialData(list, getFoes());
+  } else {
+    inp.value = '';
+    setStatusText('friendStatusMsg', 'Уже в друзьях', true);
+  }
 }
 
-async function addFoe() {
+function addFoe() {
   const inp = document.getElementById('newFoeInput');
   const raw = inp.value.trim();
   if (!raw) return;
   const me = getUser();
-  if (me && me.name.toLowerCase() === raw.toLowerCase()) { setStatusText('foeStatusMsg', 'Нельзя добавить себя', true); return; }
+  if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+    setStatusText('foeStatusMsg', 'Нельзя добавить себя', true);
+    return;
+  }
   const existing = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
   const foeName = existing || raw;
   const foes = getFoes();
   if (!foes.some(x => x.toLowerCase() === foeName.toLowerCase())) {
     foes.push(foeName);
     const newFriends = getFriends().filter(x => x.toLowerCase() !== foeName.toLowerCase());
-    inp.value = ''; renderFriends(); renderFoes();
+    inp.value = '';
+    renderFriends();
+    renderFoes();
     setStatusText('foeStatusMsg', `В ЧС: ${foeName}`, false);
-    await saveSocialData(newFriends, foes);
-  } else { inp.value = ''; }
+    saveSocialData(newFriends, foes);
+  } else {
+    inp.value = '';
+  }
 }
 
-async function delFriend(idx) {
+function delFriend(idx) {
   const list = getFriends();
-  if (list[idx] === activeFriend) { activeFriend = ''; document.getElementById('pmSendArea').style.display = 'none'; document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС'; }
-  list.splice(idx, 1); renderFriends(); await saveSocialData(list, getFoes());
+  if (list[idx] === activeFriend) {
+    activeFriend = '';
+    document.getElementById('pmSendArea').style.display = 'none';
+    document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
+  }
+  list.splice(idx, 1);
+  renderFriends();
+  saveSocialData(list, getFoes());
 }
 
-async function delFoe(idx) { const list = getFoes(); list.splice(idx, 1); renderFoes(); await saveSocialData(getFriends(), list); }
-function selectFriend(name) { activeFriend = name; document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`; document.getElementById('pmSendArea').style.display = 'block'; renderFriends(); syncFromCloud(); }
+function delFoe(idx) {
+  const list = getFoes();
+  list.splice(idx, 1);
+  renderFoes();
+  saveSocialData(getFriends(), list);
+}
+
+function selectFriend(name) {
+  activeFriend = name;
+  document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`;
+  document.getElementById('pmSendArea').style.display = 'block';
+  renderFriends();
+  renderChat();
+}
 
 function renderChat() {
   const u = getUser();
   if (!u || !activeFriend) return;
   const msgs = pmsCache[getRoomId(u.name, activeFriend)] || [];
   const log = document.getElementById('pmChatLog');
-  log.innerHTML = msgs.length ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('') : '<span style="color:#777;">Сообщений нет.</span>';
+  log.innerHTML = msgs.length
+    ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('')
+    : '<span style="color:#777;">Сообщений нет.</span>';
   log.scrollTop = log.scrollHeight;
 }
 
-async function sendPM() {
+function sendPM() {
   const u = getUser();
   const inp = document.getElementById('pmInput');
   const txt = inp.value.trim();
@@ -967,12 +811,16 @@ async function sendPM() {
   const room = getRoomId(u.name, activeFriend);
   if (!pmsCache[room]) pmsCache[room] = [];
   pmsCache[room].push(`<b>${u.name}:</b> ${txt}`);
-  inp.value = ''; renderChat(); await saveAll();
+  inp.value = '';
+  renderChat();
+  saveAll();
 }
 
 function openTopic(id) {
-  currentTopic = id; activeFriend = '';
-  const t = topicsData[id]; const u = getUser();
+  currentTopic = id;
+  activeFriend = '';
+  const t = topicsData[id];
+  const u = getUser();
   document.getElementById('homeView').style.display = 'none';
   document.getElementById('cabinetView').style.display = 'none';
   document.getElementById('topicView').style.display = 'block';
@@ -982,30 +830,53 @@ function openTopic(id) {
   const pollBtn = document.getElementById('staffTopicPollBtn');
   if (pollBtn) pollBtn.style.display = (u && (u.isAdm || u.isMod)) ? 'inline-block' : 'none';
   const box = document.getElementById('replyBox');
-  if ((id === 'news' || id === 'rules') && (!u || !u.isMod)) { box.style.display = 'none'; }
-  else {
+  if ((id === 'news' || id === 'rules') && (!u || !u.isMod)) {
+    box.style.display = 'none';
+  } else {
     box.style.display = 'block';
     document.getElementById('simpleWarnText').style.display = (u && u.isSimple && id === 'admins') ? 'block' : 'none';
     document.getElementById('postText').disabled = (u && u.isSimple && id === 'admins');
   }
   renderPollsForTarget('topic:' + id, 'topicPollsContainer');
-  renderPosts(); syncFromCloud();
+  renderPosts();
 }
 
 function renderPosts() {
-  const t = topicsData[currentTopic]; const u = getUser(); const foes = getFoes();
+  const t = topicsData[currentTopic];
+  const u = getUser();
+  const foes = getFoes();
   document.getElementById('postsContainer').innerHTML = t.posts.map((p, idx) => {
-    if (foes.includes(p.owner)) return `<div class="post-box" style="background:#f5d6d6; color:#800000;">Сообщение от <b>${p.owner}</b> скрыто (в недругах).</div>`;
-    const badge = p.status === 'Жалоба рассматривается' ? `<div class="badge badge-wait">${p.status}</div>` : (p.status === 'Одобрено' ? `<div class="badge badge-ok">${p.status}</div>` : '');
-    const del = (u && (u.name === p.owner || u.isMod)) ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
-    const mod = (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins')) ? `<div style="margin-top:6px;"><button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> <button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>` : '';
-    const bioLine = p.bio ? `<div style="font-size:10px; color:#888; margin-top:4px; border-top:1px dotted #444; padding-top:2px;"><i>${p.bio}</i></div>` : '';
-    return `<div class="post-box"><div class="post-header"><span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span></div><div class="post-body-wrap"><img src="${p.ava || DEFAULT_AVA}" class="ava-post"><div style="flex:1;"><div>${p.text}</div>${bioLine}${badge}${mod}</div></div></div>`;
+    if (foes.includes(p.owner)) {
+      return `<div class="post-box" style="background:#f5d6d6; color:#800000;">Сообщение от <b>${p.owner}</b> скрыто (в недругах).</div>`;
+    }
+    const badge = p.status === 'Жалоба рассматривается'
+      ? `<div class="badge badge-wait">${p.status}</div>`
+      : (p.status === 'Одобрено' ? `<div class="badge badge-ok">${p.status}</div>` : '');
+    const del = (u && (u.name === p.owner || u.isMod))
+      ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
+    const mod = (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins'))
+      ? `<div style="margin-top:6px;"><button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> <button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`
+      : '';
+    const bioLine = p.bio
+      ? `<div style="font-size:10px; color:#888; margin-top:4px; border-top:1px dotted #444; padding-top:2px;"><i>${p.bio}</i></div>`
+      : '';
+    return `<div class="post-box"><div class="post-header"><span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span></div>` +
+      `<div class="post-body-wrap"><img src="${p.ava || DEFAULT_AVA}" class="ava-post"><div style="flex:1;"><div>${p.text}</div>${bioLine}${badge}${mod}</div></div></div>`;
   }).join('');
 }
 
-function delPost(idx) { topicsData[currentTopic].posts.splice(idx, 1); document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length; renderPosts(); saveAll(); }
-function setSt(idx, st) { topicsData[currentTopic].posts[idx].status = st; renderPosts(); saveAll(); }
+function delPost(idx) {
+  topicsData[currentTopic].posts.splice(idx, 1);
+  document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
+  renderPosts();
+  saveAll();
+}
+
+function setSt(idx, st) {
+  topicsData[currentTopic].posts[idx].status = st;
+  renderPosts();
+  saveAll();
+}
 
 function addPost() {
   const u = getUser();
@@ -1015,12 +886,20 @@ function addPost() {
   if (!text) return;
   const clan = getUserClan(u.name);
   const st = (currentTopic === 'players' || currentTopic === 'admins') ? 'Жалоба рассматривается' : '';
-  topicsData[currentTopic].posts.push({ owner: u.name, author: `${clan ? `[${clan.tag}] ` : ''}${u.name} [${u.role}]`, ava: u.ava || '', bio: u.bio || '', text, status: st });
+  topicsData[currentTopic].posts.push({
+    owner: u.name,
+    author: `${clan ? `[${clan.tag}] ` : ''}${u.name} [${u.role}]`,
+    ava: u.ava || '',
+    bio: u.bio || '',
+    text,
+    status: st
+  });
   document.getElementById('postText').value = '';
   document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
-  renderPosts(); saveAll();
+  renderPosts();
+  saveAll();
 }
 
 renderUser();
 syncFromCloud();
-setInterval(syncFromCloud, 4000);
+checkServersPing();
