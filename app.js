@@ -2,13 +2,57 @@ const NTFY_TOPIC = 'gamepasta_sync_axelrun00_v2';
 const NTFY_URL = 'https://ntfy.sh' + NTFY_TOPIC;
 
 const WIN7_ICONS = {
-  news: '<svg class="win7-ico" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="#4da6ff" stroke="#1b4f8c" stroke-width="1.5"/><rect x="6" y="6" width="12" height="3" fill="#fff"/><rect x="6" y="11" width="7" height="2" fill="#e6f2ff"/><rect x="6" y="15" width="12" height="2" fill="#e6f2ff"/></svg>',
-  shield: '<svg class="win7-ico" viewBox="0 0 24 24"><path d="M12 2L4 5v6c0 5.5 3.4 10.6 8 12 4.6-1.4 8-6.5 8-12V5l-8-3z" fill="#1e6bb8" stroke="#0d355e" stroke-width="1.5"/><path d="M12 2v10H4V5l8-3z" fill="#f7c926"/><path d="M12 12h8c-.3 4.8-3.5 9.2-8 11V12z" fill="#f7c926"/></svg>',
-  warn: '<svg class="win7-ico" viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2z" fill="#ffd633" stroke="#8a6d00" stroke-width="1.5"/><rect x="11" y="8" width="2" height="7" fill="#000"/><rect x="11" y="17" width="2" height="2" fill="#000"/></svg>',
-  alert: '<svg class="win7-ico" viewBox="0 0 24 24"><path d="M12 2L4 5v6c0 5.5 3.4 10.6 8 12 4.6-1.4 8-6.5 8-12V5l-8-3z" fill="#d93829" stroke="#6e140c" stroke-width="1.5"/><path d="M9 9l6 6M15 9l-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
-  help: '<svg class="win7-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#2b88d8" stroke="#10426e" stroke-width="1.5"/><text x="12" y="17" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="Tahoma">?</text></svg>',
-  folder: '<svg class="win7-ico" viewBox="0 0 24 24"><path d="M2 6c0-1.1.9-2 2-2h5l2 2h9c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6z" fill="#f7cf46" stroke="#9e7b11" stroke-width="1.4"/><path d="M2 9h20v9c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V9z" fill="#ffe175"/></svg>',
-  gear: '<svg class="win7-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#8c9ba5" stroke="#3c4852" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="#ece9d8" stroke="#3c4852" stroke-width="1.5"/></svg>'
+  news:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><linearGradient id="w7n" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8cd3ff"/><stop offset="50%" stop-color="#2b88d8"/><stop offset="100%" stop-color="#104e8b"/></linearGradient></defs>' +
+    '<rect x="4" y="3" width="24" height="26" rx="3" fill="url(#w7n)" stroke="#0c3766" stroke-width="1.5"/>' +
+    '<path d="M5 4h22v10c-7 2-15 2-22 0V4z" fill="#fff" fill-opacity="0.35"/>' +
+    '<rect x="8" y="8" width="16" height="3.5" rx="1" fill="#fff"/>' +
+    '<rect x="8" y="14" width="10" height="2.5" rx="1" fill="#dff2ff"/>' +
+    '<rect x="8" y="19" width="16" height="2.5" rx="1" fill="#dff2ff"/>' +
+    '<rect x="8" y="23.5" width="13" height="2.5" rx="1" fill="#dff2ff"/></svg>',
+  shield:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><linearGradient id="w7sb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6ec3ff"/><stop offset="100%" stop-color="#1458a6"/></linearGradient>' +
+    '<linearGradient id="w7sy" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff078"/><stop offset="100%" stop-color="#e09b00"/></linearGradient></defs>' +
+    '<path d="M16 2L5 6v9c0 7.4 4.6 13.8 11 15.5C22.4 28.8 27 22.4 27 15V6L16 2z" fill="#d9e4f0" stroke="#2c3e50" stroke-width="1.5"/>' +
+    '<path d="M16 4v11H7V7.5L16 4z" fill="url(#w7sy)"/>' +
+    '<path d="M16 4l9 3.5V15h-9V4z" fill="url(#w7sb)"/>' +
+    '<path d="M7 15h9v13.2C10.8 26.6 7 21.3 7 15z" fill="url(#w7sb)"/>' +
+    '<path d="M16 15h9c0 6.3-3.8 11.6-9 13.2V15z" fill="url(#w7sy)"/>' +
+    '<path d="M6 7l10-3.5L26 7v7c-6 2-14 2-20 0V7z" fill="#fff" fill-opacity="0.3"/></svg>',
+  warn:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><linearGradient id="w7w" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff48f"/><stop offset="55%" stop-color="#ffd014"/><stop offset="100%" stop-color="#d48800"/></linearGradient></defs>' +
+    '<path d="M16 3L2 28h28L16 3z" fill="url(#w7w)" stroke="#7a5200" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M16 5L5 25h22L16 5z" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.2"/>' +
+    '<rect x="14.5" y="11" width="3" height="9" rx="1.2" fill="#222"/>' +
+    '<circle cx="16" cy="23.5" r="1.8" fill="#222"/></svg>',
+  alert:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><linearGradient id="w7a" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff857a"/><stop offset="50%" stop-color="#d92b1c"/><stop offset="100%" stop-color="#871107"/></linearGradient></defs>' +
+    '<path d="M16 2L5 6v9c0 7.4 4.6 13.8 11 15.5C22.4 28.8 27 22.4 27 15V6L16 2z" fill="url(#w7a)" stroke="#5c0b04" stroke-width="1.5"/>' +
+    '<path d="M6 7l10-3.5L26 7v7c-6 2-14 2-20 0V7z" fill="#fff" fill-opacity="0.32"/>' +
+    '<path d="M11.5 11.5l9 9M20.5 11.5l-9 9" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>',
+  help:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><radialGradient id="w7h" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#9ee0ff"/><stop offset="55%" stop-color="#1c7ed6"/><stop offset="100%" stop-color="#0b3d75"/></radialGradient></defs>' +
+    '<circle cx="16" cy="16" r="13" fill="url(#w7h)" stroke="#09305c" stroke-width="1.5"/>' +
+    '<ellipse cx="16" cy="9.5" rx="8.5" ry="4.5" fill="#fff" fill-opacity="0.4"/>' +
+    '<text x="16" y="22.5" text-anchor="middle" fill="#fff" font-size="18" font-weight="bold" font-family="Segoe UI, Tahoma">?</text></svg>',
+  folder:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><linearGradient id="w7fb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe57f"/><stop offset="100%" stop-color="#d99b16"/></linearGradient>' +
+    '<linearGradient id="w7ff" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff3a1"/><stop offset="45%" stop-color="#ffd54f"/><stop offset="100%" stop-color="#eba917"/></linearGradient></defs>' +
+    '<path d="M3 7c0-1.1.9-2 2-2h7l2.5 2.5H27c1.1 0 2 .9 2 2V25c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V7z" fill="url(#w7fb)" stroke="#9c6d08" stroke-width="1.3"/>' +
+    '<rect x="6" y="9.5" width="20" height="12" rx="1" fill="#fff" stroke="#ccc" stroke-width="0.8"/>' +
+    '<path d="M2.5 13h27l-1.2 12.2c-.1 1-.9 1.8-1.9 1.8H5.6c-1 0-1.8-.8-1.9-1.8L2.5 13z" fill="url(#w7ff)" stroke="#9c6d08" stroke-width="1.3"/>' +
+    '<path d="M3.5 14h25v4c-8 1.5-17 1.5-25 0v-4z" fill="#fff" fill-opacity="0.45"/></svg>',
+  gear:
+    '<svg class="win7-ico" viewBox="0 0 32 32">' +
+    '<defs><linearGradient id="w7g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="50%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#475569"/></linearGradient></defs>' +
+    '<path d="M14 2h4l.8 3.3c1 .3 1.9.7 2.7 1.2l3.1-1.5 2.8 2.8-1.5 3.1c.5.8.9 1.7 1.2 2.7L30 14v4l-3.3.8c-.3 1-.7 1.9-1.2 2.7l1.5 3.1-2.8 2.8-3.1-1.5c-.8.5-1.7.9-2.7 1.2L18 30h-4l-.8-3.3c-1-.3-1.9-.7-2.7-1.2l-3.1 1.5-2.8-2.8 1.5-3.1c-.5-.8-.9-1.7-1.2-2.7L2 18v-4l3.3-.8c.3-1 .7-1.9 1.2-2.7L5 7.4l2.8-2.8 3.1 1.5c.8-.5 1.7-.9 2.7-1.2L14 2z" fill="url(#w7g)" stroke="#1e293b" stroke-width="1.4"/>' +
+    '<circle cx="16" cy="16" r="5" fill="#ece9d8" stroke="#1e293b" stroke-width="1.5"/></svg>'
 };
 
 const ICON_CYCLE = ['folder', 'news', 'shield', 'warn', 'alert', 'help', 'gear'];
