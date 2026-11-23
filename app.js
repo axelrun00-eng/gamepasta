@@ -1078,4 +1078,221 @@ function openCabinet() {
   const clan = getUserClan(u.name);
   document.getElementById('cabClanInfo').innerHTML = clan
     ? `<b>Клан:</b> [${clan.tag}] ${clan.name} (${clan.leader === u.name ? 'Лидер' : 'Участник'})`
-    
+    function renderFriends() {
+  const box = document.getElementById('friendsListBox');
+  if (!box) return;
+  box.innerHTML = getFriends().map((f, idx) => {
+    const cls = (f === activeFriend) ? 'friend-item friend-active' : 'friend-item';
+    return `<div class="${cls}" onclick="selectFriend('${f}')">` +
+      `<span>${f}</span>` +
+      `<span onclick="event.stopPropagation(); delFriend(${idx})" style="color:#ef4444; font-weight:bold;">[X]</span></div>`;
+  }).join('');
+}
+
+function renderFoes() {
+  const box = document.getElementById('foesListBox');
+  if (!box) return;
+  box.innerHTML = getFoes().map((f, idx) =>
+    `<div class="foe-item"><span>${f}</span>` +
+    `<span onclick="delFoe(${idx})" style="color:#ef4444; font-weight:bold; cursor:pointer;">[X]</span></div>`
+  ).join('');
+}
+
+function setStatusText(elId, msg, isErr) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.style.color = isErr ? '#ef4444' : '#22c55e';
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = ''; }, 3000);
+}
+
+function addFriend() {
+  const inp = document.getElementById('newFriendInput');
+  const raw = inp.value.trim();
+  if (!raw) return;
+  const me = getUser();
+  if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+    setStatusText('friendStatusMsg', 'Нельзя добавить себя', true);
+    return;
+  }
+  const existing = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
+  const friendName = existing || raw;
+  if (!existing) usersCache.push(friendName);
+
+  const list = getFriends();
+  if (!list.some(x => x.toLowerCase() === friendName.toLowerCase())) {
+    list.push(friendName);
+    inp.value = '';
+    renderFriends();
+    setStatusText('friendStatusMsg', `Добавлен: ${friendName}`, false);
+    saveSocialData(list, getFoes());
+  } else {
+    inp.value = '';
+    setStatusText('friendStatusMsg', 'Уже в друзьях', true);
+  }
+}
+
+function addFoe() {
+  const inp = document.getElementById('newFoeInput');
+  const raw = inp.value.trim();
+  if (!raw) return;
+  const me = getUser();
+  if (me && me.name.toLowerCase() === raw.toLowerCase()) {
+    setStatusText('foeStatusMsg', 'Нельзя добавить себя', true);
+    return;
+  }
+  const existing = usersCache.find(u => u.toLowerCase() === raw.toLowerCase());
+  const foeName = existing || raw;
+  const foes = getFoes();
+  if (!foes.some(x => x.toLowerCase() === foeName.toLowerCase())) {
+    foes.push(foeName);
+    const newFriends = getFriends().filter(x => x.toLowerCase() !== foeName.toLowerCase());
+    inp.value = '';
+    renderFriends();
+    renderFoes();
+    setStatusText('foeStatusMsg', `В ЧС: ${foeName}`, false);
+    saveSocialData(newFriends, foes);
+  } else {
+    inp.value = '';
+  }
+}
+
+function delFriend(idx) {
+  const list = getFriends();
+  if (list[idx] === activeFriend) {
+    activeFriend = '';
+    document.getElementById('pmSendArea').style.display = 'none';
+    document.getElementById('chatWithTitle').textContent = 'Выберите друга для ЛС';
+  }
+  list.splice(idx, 1);
+  renderFriends();
+  saveSocialData(list, getFoes());
+}
+
+function delFoe(idx) {
+  const list = getFoes();
+  list.splice(idx, 1);
+  renderFoes();
+  saveSocialData(getFriends(), list);
+}
+
+function selectFriend(name) {
+  activeFriend = name;
+  document.getElementById('chatWithTitle').textContent = `ЛС с: ${name}`;
+  document.getElementById('pmSendArea').style.display = 'block';
+  renderFriends();
+  renderChat();
+}
+
+function renderChat() {
+  const u = getUser();
+  if (!u || !activeFriend) return;
+  const msgs = pmsCache[getRoomId(u.name, activeFriend)] || [];
+  const log = document.getElementById('pmChatLog');
+  log.innerHTML = msgs.length
+    ? msgs.map(m => `<div style="margin-bottom:4px;">${m}</div>`).join('')
+    : '<span style="color:#777;">Сообщений нет.</span>';
+  log.scrollTop = log.scrollHeight;
+}
+
+function sendPM() {
+  const u = getUser();
+  const inp = document.getElementById('pmInput');
+  const txt = inp.value.trim();
+  if (!txt || !activeFriend || !u) return;
+  const room = getRoomId(u.name, activeFriend);
+  if (!pmsCache[room]) pmsCache[room] = [];
+  pmsCache[room].push(`<b>${u.name}:</b> ${txt}`);
+  inp.value = '';
+  renderChat();
+  saveAll();
+}
+
+function openTopic(id) {
+  currentTopic = id;
+  activeFriend = '';
+  const t = topicsData[id];
+  const u = getUser();
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('cabinetView').style.display = 'none';
+  document.getElementById('topicView').style.display = 'block';
+  document.getElementById('topicHeaderTitle').textContent = t.title;
+  document.getElementById('breadcrumbs').innerHTML = `<a onclick="showHome()">Список форумов</a> &raquo; ${t.title}`;
+
+  const pollBtn = document.getElementById('staffTopicPollBtn');
+  if (pollBtn) pollBtn.style.display = (u && (u.isAdm || u.isMod)) ? 'inline-block' : 'none';
+  const box = document.getElementById('replyBox');
+  if ((id === 'news' || id === 'rules') && (!u || !u.isMod)) {
+    box.style.display = 'none';
+  } else {
+    box.style.display = 'block';
+    document.getElementById('simpleWarnText').style.display = (u && u.isSimple && id === 'admins') ? 'block' : 'none';
+    document.getElementById('postText').disabled = (u && u.isSimple && id === 'admins');
+  }
+  renderPollsForTarget('topic:' + id, 'topicPollsContainer');
+  renderPosts();
+}
+
+function renderPosts() {
+  const t = topicsData[currentTopic];
+  const u = getUser();
+  const foes = getFoes();
+  document.getElementById('postsContainer').innerHTML = t.posts.map((p, idx) => {
+    if (foes.includes(p.owner)) {
+      return `<div class="post-box" style="background:#f5d6d6; color:#800000;">Сообщение от <b>${p.owner}</b> скрыто (в недругах).</div>`;
+    }
+    const badge = p.status === 'Жалоба рассматривается'
+      ? `<div class="badge badge-wait">${p.status}</div>`
+      : (p.status === 'Одобрено' ? `<div class="badge badge-ok">${p.status}</div>` : '');
+    const del = (u && (u.name === p.owner || u.isMod))
+      ? `<button class="del-btn" onclick="delPost(${idx})">[Удалить]</button>` : '';
+    const mod = (u && u.isMod && (currentTopic === 'players' || currentTopic === 'admins'))
+      ? `<div style="margin-top:6px;"><button class="logout-btn" onclick="setSt(${idx}, 'Жалоба рассматривается')">На рассмотрение</button> <button class="logout-btn" onclick="setSt(${idx}, 'Одобрено')">Одобрено</button></div>`
+      : '';
+    const bioLine = p.bio
+      ? `<div style="font-size:10px; color:#888; margin-top:4px; border-top:1px dotted #444; padding-top:2px;"><i>${p.bio}</i></div>`
+      : '';
+    return `<div class="post-box"><div class="post-header"><span>Автор: <b>${p.author}</b></span><span>#${idx + 1}${del}</span></div>` +
+      `<div class="post-body-wrap"><img src="${p.ava || DEFAULT_AVA}" class="ava-post"><div style="flex:1;"><div>${p.text}</div>${bioLine}${badge}${mod}</div></div></div>`;
+  }).join('');
+}
+
+function delPost(idx) {
+  topicsData[currentTopic].posts.splice(idx, 1);
+  document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
+  renderPosts();
+  saveAll();
+}
+
+function setSt(idx, st) {
+  topicsData[currentTopic].posts[idx].status = st;
+  renderPosts();
+  saveAll();
+}
+
+function addPost() {
+  const u = getUser();
+  if (!u) { openModal(); return; }
+  if (u.isSimple && currentTopic === 'admins') return;
+  const text = document.getElementById('postText').value.trim();
+  if (!text) return;
+  const clan = getUserClan(u.name);
+  const st = (currentTopic === 'players' || currentTopic === 'admins') ? 'Жалоба рассматривается' : '';
+  topicsData[currentTopic].posts.push({
+    owner: u.name,
+    author: `${clan ? `[${clan.tag}] ` : ''}${u.name} [${u.role}]`,
+    ava: u.ava || '',
+    bio: u.bio || '',
+    text,
+    status: st
+  });
+  document.getElementById('postText').value = '';
+  document.getElementById('count-' + currentTopic).textContent = topicsData[currentTopic].posts.length;
+  renderPosts();
+  saveAll();
+}
+
+renderUser();
+syncFromCloud();
+checkServersPing();
+
