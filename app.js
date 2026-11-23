@@ -1,7 +1,7 @@
 const MQTT_BROKER = 'wss://broker.emqx.io:8084/mqtt';
 const MQTT_TOPIC = 'gamepasta/axelrun00/sync_db_v1';
 let mqttClient = null;
-
+ 
 const WIN7_ICONS = {
   news:
     '<svg class="win7-ico" viewBox="0 0 32 32">' +
