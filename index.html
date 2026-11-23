@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v6.5 Clans, Conferences & Polls)</title>
-  <link rel="stylesheet" href="style.css">
+  <title>GamePasta.ru :: Игровой портал (v7.0 Win7 Icons, Clans, Confs & Polls)</title>
+  <link rel="stylesheet" href="style.css?v=70">
 </head>
 <body>
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v6.5]</h1>
-      <p id="themeSubtitle">Windows XP Olive Edition • Live Sync</p>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v7.0]</h1>
+      <p id="themeSubtitle">Windows XP / 7 Olive Edition • Live Sync</p>
     </div>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
       <button class="login-btn" id="themeToggleBtn" onclick="toggleSiteTheme()">[ Стиль: OldSchool ]</button>
@@ -76,11 +76,11 @@
     <table class="forum-table">
       <tr><th style="width: 78%;">Информация проекта</th><th style="width: 22%; text-align: center;">Сообщений</th></tr>
       <tr class="topic-row">
-        <td><a class="topic-title" onclick="openTopic('news')">Новости</a><div class="topic-desc">Обновления серверов и события.</div></td>
+        <td id="staticRow-news"><a class="topic-title" onclick="openTopic('news')">Новости</a><div class="topic-desc">Обновления серверов и события.</div></td>
         <td style="text-align: center;" id="count-news">1</td>
       </tr>
       <tr class="topic-row">
-        <td><a class="topic-title" onclick="openTopic('rules')">Правила</a><div class="topic-desc">Устав сервера и регламент проверок.</div></td>
+        <td id="staticRow-rules"><a class="topic-title" onclick="openTopic('rules')">Правила</a><div class="topic-desc">Строгий устав сервера и регламент проверок.</div></td>
         <td style="text-align: center;" id="count-rules">1</td>
       </tr>
     </table>
@@ -314,6 +314,18 @@
     </div>
     <form id="createTopicForm" style="margin-top:8px;">
       <div class="form-row"><b>Название темы:</b><br><input type="text" id="newTopicTitle" required></div>
+      <div class="form-row">
+        <b>Значок темы (Windows 7):</b><br>
+        <select id="newTopicIcon">
+          <option value="folder">📁 Жёлтая папка (Windows 7)</option>
+          <option value="news">📰 Новости / Документ</option>
+          <option value="shield">🛡️ Щит безопасности (UAC)</option>
+          <option value="warn">⚠️ Жёлтое предупреждение</option>
+          <option value="alert">🚨 Красный щит / Тревога</option>
+          <option value="help">❓ Справка / Вопрос</option>
+          <option value="gear">⚙️ Шестерёнка / Настройки</option>
+        </select>
+      </div>
       <div class="form-row"><b>Краткое описание:</b><br><input type="text" id="newTopicDesc" required></div>
       <div class="form-row"><b>Первое сообщение:</b><br><textarea id="newTopicFirstPost" required></textarea></div>
       <button type="submit" class="btn-small" style="width:100%;">Создать тему</button>
@@ -356,6 +368,6 @@
   </div>
 </div>
 
-<script src="app.js?v=65"></script>
+<script src="app.js?v=70"></script>
 </body>
 </html>
