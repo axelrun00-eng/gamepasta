@@ -163,3 +163,14 @@ body.modernic .friend-active { background: #22c55e; color: #052e16; }
 body.modernic .key-tag { background: #0f151e; border: 1px dashed #4ade80; color: #4ade80; border-radius: 4px; }
 body.modernic .modal-card { background: #18202c; border: 1px solid #334155; border-radius: 12px; color: #f1f5f9; }
 body.modernic .del-btn { background: #450a0a; border-color: #991b1b; color: #fca5a5; border-radius: 4px; }
+/* === WINDOWS 7 OLD-SCHOOL ICONS === */
+.win7-ico {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 7px;
+  display: inline-block;
+}
+body.modernic .win7-ico {
+  display: none;
+}
