@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>GamePasta.ru :: Игровой портал (v6.0 Conferences & Polls)</title>
+  <title>GamePasta.ru :: Игровой портал (v6.5 Clans, Conferences & Polls)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrapper">
   <div class="header-bar">
     <div>
-      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v6.0]</h1>
-      <p id="themeSubtitle">Windows XP Olive Edition • GitHub Cloud Sync</p>
+      <h1>:: GAMEPASTA.RU :: ИГРОВОЙ ФОРУМ [v6.5]</h1>
+      <p id="themeSubtitle">Windows XP Olive Edition • Live Sync</p>
     </div>
     <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
       <button class="login-btn" id="themeToggleBtn" onclick="toggleSiteTheme()">[ Стиль: OldSchool ]</button>
@@ -50,6 +50,24 @@
       <tbody id="serversMonitorBody"></tbody>
     </table>
 
+    <div style="margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+      <b>Кланы проекта:</b>
+      <span id="userCreateClanBar" style="display:none;">
+        <button class="btn-small" onclick="openClanModal()">+ Создать клан</button>
+      </span>
+    </div>
+    <table class="forum-table">
+      <thead>
+        <tr>
+          <th style="width: 38%;">Клан и тег</th>
+          <th style="width: 22%;">Лидер</th>
+          <th style="width: 14%; text-align: center;">Состав</th>
+          <th style="width: 26%; text-align: center;">Действия / Заявки</th>
+        </tr>
+      </thead>
+      <tbody id="clansTableBody"></tbody>
+    </table>
+
     <div id="staffHomePollBar" style="display:none; margin-bottom:6px; text-align:right;">
       <button class="btn-small" onclick="openPollModal('home')">+ Создать опрос на главной</button>
     </div>
@@ -77,12 +95,13 @@
     </table>
   </div>
   <div id="cabinetView" style="display: none;">
-    <table class="forum-table"><tr><th>Личный раздел • Профиль, Друзья, ЛС и Конференции</th></tr></table>
+    <table class="forum-table"><tr><th>Личный раздел • Профиль, Клан, Друзья, ЛС и Конференции</th></tr></table>
 
     <div class="post-box" style="display:flex; gap:12px; align-items:flex-start;">
       <img id="cabAvatarImg" class="ava-cab" src="" alt="Аватар">
       <div style="flex:1;">
         <div id="cabProfileInfo"></div>
+        <div id="cabClanInfo" style="margin-top:4px;"></div>
         <div id="avaUploadBlock" style="margin-top:6px;">
           <b>Аватарка:</b>
           <input type="file" id="avaFileInput" accept="image/*" onchange="uploadAvatar(event)" style="font-size:10px;">
@@ -129,7 +148,7 @@
     </div>
 
     <div id="cabSimpleBlocked" class="warn-label" style="display: none;">
-      <b>ОШИБКА:</b> Простой аккаунт не может иметь аватарку, описание, друзей, ЛС и конференции.
+      <b>ОШИБКА:</b> Простой аккаунт не может иметь аватарку, клан, описание, друзей, ЛС и конференции.
     </div>
 
     <div id="cabContent">
@@ -219,6 +238,21 @@
   </div>
   <div style="text-align:center; font-size:10px; color:#64748b; margin-top:8px;">
     © 2005-2026 GamePasta.ru • OldSchool &amp; Modernic Edition
+  </div>
+</div>
+
+<div class="modal-bg" id="clanModal">
+  <div class="modal-card">
+    <div style="background:#59752d; color:#fff; padding:5px; display:flex; justify-content:space-between; font-weight:bold;">
+      <span>Создание нового клана</span>
+      <span style="cursor:pointer;" onclick="closeClanModal()">[X]</span>
+    </div>
+    <form id="createClanForm" style="margin-top:8px;">
+      <div class="form-row"><b>Название клана:</b><br><input type="text" id="clanNameInput" placeholder="Ночные Волки" required></div>
+      <div class="form-row"><b>Клан-тег (до 6 букв):</b><br><input type="text" id="clanTagInput" maxlength="6" placeholder="WOLF" required></div>
+      <div class="form-row"><b>Девиз / Описание:</b><br><input type="text" id="clanDescInput" placeholder="Играем честно и побеждаем!" required></div>
+      <button type="submit" class="btn-small" style="width:100%;">Создать клан</button>
+    </form>
   </div>
 </div>
 
