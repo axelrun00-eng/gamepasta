@@ -165,8 +165,8 @@ body.modernic .modal-card { background: #18202c; border: 1px solid #334155; bord
 body.modernic .del-btn { background: #450a0a; border-color: #991b1b; color: #fca5a5; border-radius: 4px; }
 /* === WINDOWS 7 OLD-SCHOOL ICONS === */
 .win7-ico {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   vertical-align: middle;
   margin-right: 7px;
   display: inline-block;
